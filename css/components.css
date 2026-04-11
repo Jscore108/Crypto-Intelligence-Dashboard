@@ -379,5 +379,22 @@
 
 /* --- Responsive --- */
 @media (max-width: 768px) {
-  .sell-zone-row { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .sell-zone-row {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 12px;
+  }
+  .chart-panel { padding: 14px; }
+  .chart-panel__body { height: 220px; }
+  .chart-panel__header { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .briefing-section { padding: 16px; }
+  .tabs { flex-direction: column; }
+  .btn { font-size: 0.65rem; padding: 8px 14px; }
+  .data-table th { font-size: 0.55rem; padding: 6px 8px; }
+  .data-table td { font-size: 0.72rem; padding: 8px; }
+}
+
+@media (max-width: 380px) {
+  .sell-zone-row { grid-template-columns: 1fr; font-size: 0.75rem; }
+  .indicator-card__value { font-size: 1.2rem; }
 }
