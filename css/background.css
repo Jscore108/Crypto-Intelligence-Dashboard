@@ -1,16 +1,50 @@
 /* ============================================================
-   background.css — Canvas background support
+   background.css — Image background with overlays
    ============================================================ */
 
+/* Fixed background image */
+body {
+  background: #03040a;
+  background-image: url('../img/bg.png');
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+/* Dark overlay for readability */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg,
+      rgba(3, 4, 10, 0.75) 0%,
+      rgba(3, 4, 10, 0.6) 30%,
+      rgba(3, 4, 10, 0.7) 60%,
+      rgba(3, 4, 10, 0.85) 100%
+    );
+}
+
+/* Subtle animated vignette */
+body::after {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 40%, rgba(3, 4, 10, 0.5) 100%);
+}
+
+/* Canvas overlay (rain + particles) */
 #cyberpunk-canvas {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  top: 0; left: 0; width: 100%; height: 100%;
   z-index: 0;
   pointer-events: none;
 }
 
-/* Hide old CSS-only background elements if still in DOM */
+/* Hide old CSS background elements */
 .cyber-bg { display: none; }
