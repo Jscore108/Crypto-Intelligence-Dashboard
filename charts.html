@@ -71,6 +71,16 @@
         </div>
       </div>
 
+      <!-- BTC Rainbow Chart -->
+      <div class="chart-panel chart-panel--full">
+        <div class="chart-panel__header">
+          <div class="chart-panel__title">BTC Rainbow Chart — Log Regression Bands</div>
+        </div>
+        <div class="chart-panel__body" id="chart-rainbow" style="height:400px;">
+          <div class="chart-loading loading-pulse">Loading chart...</div>
+        </div>
+      </div>
+
       <!-- ETH Price -->
       <div class="chart-panel">
         <div class="chart-panel__header">
@@ -135,15 +145,18 @@
       currentDays = days;
       // Prefetch all unique data in parallel (only 4 calls)
       // Then charts render instantly from cache
+      // Prefetch — also get max BTC data for rainbow
       await Promise.all([
         API.getHistoricalPrices('bitcoin', days).catch(() => null),
+        API.getHistoricalPrices('bitcoin', 'max').catch(() => null),
         API.getHistoricalPrices('ethereum', days).catch(() => null),
         API.getHistoricalPrices('solana', days).catch(() => null),
         API.getFearGreedHistory().catch(() => null),
       ]);
-      // All data cached — render all charts (no new API calls)
+      // All data cached — render all charts
       await Promise.all([
         Charts.renderBTCPrice('chart-btc-price', days),
+        Charts.renderRainbow('chart-rainbow'),
         Charts.renderETHPrice('chart-eth-price', days),
         Charts.renderETHBTC('chart-ethbtc', days),
         Charts.renderFearGreed('chart-fng'),
