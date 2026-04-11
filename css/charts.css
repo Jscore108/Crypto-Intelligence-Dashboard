@@ -1,5 +1,5 @@
 /* ============================================================
-   charts.css — Chart-specific styles
+   charts.css — Premium chart styles
    ============================================================ */
 
 .charts-grid {
@@ -15,6 +15,7 @@
 .chart-panel__body canvas {
   width: 100% !important;
   height: 100% !important;
+  border-radius: 8px;
 }
 
 .chart-loading {
@@ -23,7 +24,9 @@
   justify-content: center;
   height: 100%;
   color: var(--text-muted);
-  font-size: 0.85rem;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
 }
 
 @media (max-width: 768px) {
