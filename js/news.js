@@ -1,82 +1,120 @@
 // ============================================================
-// news.js — News Feed Logic
-// Uses multiple free sources with fallbacks
+// news.js — News Feed from CoinDesk + CryptoNews via RSS
 // ============================================================
 
 const News = (() => {
 
+  const RSS2JSON = 'https://api.rss2json.com/v1/api.json?rss_url=';
+
+  const FEEDS = {
+    coindesk: {
+      url: 'https://www.coindesk.com/arc/outboundfeeds/rss/',
+      name: 'CoinDesk',
+      icon: 'https://www.coindesk.com/resizer/fk6MJUVy3VsmKSxKcj6EkxmkI7k=/144x32/downloads.coindesk.com/arc/failsafe/feeds/coindesk-feed-logo.png',
+    },
+    cryptonews: {
+      url: 'https://cryptonews.net/rss/',
+      name: 'CryptoNews',
+      icon: null,
+    },
+  };
+
   /**
-   * Fetch crypto news — tries multiple free sources
+   * Fetch RSS feed via rss2json proxy
    */
-  async function fetchCryptoNews() {
-    // Try CoinGecko trending + top gainers as "market news"
+  async function fetchFeed(feedKey) {
+    const feed = FEEDS[feedKey];
+    if (!feed) return null;
+
     try {
-      const [trending, markets] = await Promise.all([
-        fetchJSON('https://api.coingecko.com/api/v3/search/trending'),
-        fetchJSON('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=20&page=1&sparkline=false&price_change_percentage=24h'),
-      ]);
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 15000);
 
-      const articles = [];
+      const response = await fetch(
+        RSS2JSON + encodeURIComponent(feed.url) + '&count=15',
+        { signal: controller.signal }
+      );
+      clearTimeout(timeout);
 
-      // Trending coins as news items
-      if (trending?.coins) {
-        trending.coins.slice(0, 7).forEach(item => {
-          const coin = item.item;
-          const priceChange = coin.data?.price_change_percentage_24h?.usd;
-          const changeStr = priceChange ? `${priceChange >= 0 ? '+' : ''}${priceChange.toFixed(1)}%` : '';
-          articles.push({
-            title: `${coin.name} (${coin.symbol.toUpperCase()}) is trending — ${changeStr} in 24h`,
-            source: 'CoinGecko Trending',
-            url: `https://www.coingecko.com/en/coins/${coin.id}`,
-            date: new Date().toISOString(),
-            type: 'trending',
-          });
-        });
-      }
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const data = await response.json();
 
-      // Big movers as news
-      if (markets && markets.length > 0) {
-        const sorted = [...markets].sort((a, b) =>
-          Math.abs(b.price_change_percentage_24h || 0) - Math.abs(a.price_change_percentage_24h || 0)
-        );
-        sorted.slice(0, 8).forEach(coin => {
-          const change = coin.price_change_percentage_24h || 0;
-          const direction = change >= 0 ? 'up' : 'down';
-          const verb = change >= 0 ? 'gains' : 'drops';
-          articles.push({
-            title: `${coin.name} ${verb} ${Math.abs(change).toFixed(1)}% — now $${coin.current_price.toLocaleString()}`,
-            source: `Market ${direction === 'up' ? 'Gainer' : 'Mover'}`,
-            url: `https://www.coingecko.com/en/coins/${coin.id}`,
-            date: new Date().toISOString(),
-            type: 'market',
-            sentiment: change > 3 ? 'bullish' : change < -3 ? 'bearish' : 'neutral',
-          });
-        });
-      }
+      if (data.status !== 'ok' || !data.items) return null;
 
-      if (articles.length > 0) return articles;
+      return data.items.map(item => ({
+        title: item.title || 'Untitled',
+        url: item.link || '#',
+        source: feed.name,
+        date: item.pubDate || '',
+        description: stripHtml(item.description || '').slice(0, 150),
+        image: item.thumbnail || item.enclosure?.link || extractImage(item.description) || null,
+      }));
     } catch (err) {
-      console.error('[News] Trending/markets fetch failed:', err);
+      console.error(`[News] ${feed.name} fetch failed:`, err);
+      return null;
     }
-
-    return null;
   }
 
   /**
-   * Helper to fetch JSON with timeout
+   * Fetch all crypto news from multiple sources
    */
-  async function fetchJSON(url) {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 15000);
-    try {
-      const response = await fetch(url, { signal: controller.signal });
-      clearTimeout(timeout);
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      return await response.json();
-    } catch (err) {
-      clearTimeout(timeout);
-      throw err;
+  async function fetchCryptoNews() {
+    const [coindesk, cryptonews] = await Promise.all([
+      fetchFeed('coindesk'),
+      fetchFeed('cryptonews'),
+    ]);
+
+    // Merge and interleave articles from both sources
+    const articles = [];
+    const cd = coindesk || [];
+    const cn = cryptonews || [];
+    const maxLen = Math.max(cd.length, cn.length);
+
+    for (let i = 0; i < maxLen; i++) {
+      if (i < cd.length) articles.push(cd[i]);
+      if (i < cn.length) articles.push(cn[i]);
     }
+
+    // Also try CoinGecko trending as fallback if both feeds fail
+    if (articles.length === 0) {
+      try {
+        const trending = await fetch('https://api.coingecko.com/api/v3/search/trending').then(r => r.json());
+        if (trending?.coins) {
+          trending.coins.slice(0, 10).forEach(item => {
+            const coin = item.item;
+            const change = coin.data?.price_change_percentage_24h?.usd;
+            articles.push({
+              title: `${coin.name} (${coin.symbol.toUpperCase()}) is trending${change ? ` — ${change >= 0 ? '+' : ''}${change.toFixed(1)}%` : ''}`,
+              source: 'CoinGecko Trending',
+              url: `https://www.coingecko.com/en/coins/${coin.id}`,
+              date: new Date().toISOString(),
+              image: coin.thumb || coin.small || null,
+              description: '',
+            });
+          });
+        }
+      } catch (_) {}
+    }
+
+    return articles.length > 0 ? articles : null;
+  }
+
+  /**
+   * Strip HTML tags from string
+   */
+  function stripHtml(html) {
+    const div = document.createElement('div');
+    div.innerHTML = html;
+    return div.textContent || div.innerText || '';
+  }
+
+  /**
+   * Extract first image URL from HTML content
+   */
+  function extractImage(html) {
+    if (!html) return null;
+    const match = html.match(/<img[^>]+src=["']([^"']+)["']/i);
+    return match ? match[1] : null;
   }
 
   /**
@@ -86,7 +124,7 @@ const News = (() => {
     const date = new Date(dateString);
     const now = new Date();
     const diff = Math.floor((now - date) / 1000);
-
+    if (isNaN(diff) || diff < 0) return '';
     if (diff < 60) return 'just now';
     if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
     if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
@@ -98,8 +136,8 @@ const News = (() => {
    */
   function detectSentiment(title) {
     const lower = title.toLowerCase();
-    const bullish = ['surge', 'soar', 'rally', 'gain', 'gains', 'rise', 'bull', 'record', 'high', 'breakout', 'pump', 'moon', 'adoption', 'approve', 'bullish', 'growth', 'up '];
-    const bearish = ['crash', 'plunge', 'drop', 'drops', 'fall', 'bear', 'sell', 'dump', 'fear', 'risk', 'warn', 'decline', 'low', 'hack', 'scam', 'fraud', 'ban', 'bearish', 'down '];
+    const bullish = ['surge', 'soar', 'rally', 'gain', 'gains', 'rise', 'rises', 'bull', 'record', 'high', 'breakout', 'pump', 'moon', 'adoption', 'approve', 'bullish', 'growth', 'launch', 'partner'];
+    const bearish = ['crash', 'plunge', 'drop', 'drops', 'fall', 'falls', 'bear', 'sell', 'dump', 'fear', 'risk', 'warn', 'decline', 'low', 'hack', 'scam', 'fraud', 'ban', 'bearish', 'lawsuit', 'sec ', 'fine'];
 
     let score = 0;
     bullish.forEach(w => { if (lower.includes(w)) score++; });
@@ -111,7 +149,7 @@ const News = (() => {
   }
 
   /**
-   * Render crypto news into container
+   * Render crypto news with images
    */
   function renderCryptoNews(containerId, articles) {
     const container = document.getElementById(containerId);
@@ -120,32 +158,31 @@ const News = (() => {
     if (!articles || articles.length === 0) {
       container.innerHTML = `
         <div class="empty-state">
-          <div class="empty-state__text">No news available. API may be rate limited — will retry in 15 minutes.</div>
+          <div class="empty-state__text">No news available. Will retry in 15 minutes.</div>
         </div>
       `;
       return;
     }
 
-    const items = articles.slice(0, 20);
-    container.innerHTML = items.map(article => {
-      const title = article.title || 'Untitled';
-      const source = article.source || 'Market Data';
-      const url = article.url || '#';
-      const date = article.date || article.updated_at || article.created_at || '';
-      const sentiment = article.sentiment || detectSentiment(title);
-      const typeIcon = article.type === 'trending' ? '&#x1F525;' : '&#x1F4C8;';
+    container.innerHTML = articles.slice(0, 20).map(article => {
+      const sentiment = detectSentiment(article.title);
+      const imgHtml = article.image
+        ? `<div class="news-card__image"><img src="${escapeHtml(article.image)}" alt="" loading="lazy" onerror="this.parentElement.style.display='none'"></div>`
+        : '';
 
       return `
-        <div class="news-card">
-          <div class="news-card__source">${typeIcon} ${escapeHtml(source)}</div>
-          <div class="news-card__title">
-            <a href="${escapeHtml(url)}" target="_blank" rel="noopener">${escapeHtml(title)}</a>
+        <a href="${escapeHtml(article.url)}" target="_blank" rel="noopener" class="news-card news-card--with-image">
+          ${imgHtml}
+          <div class="news-card__content">
+            <div class="news-card__source">${escapeHtml(article.source)}</div>
+            <div class="news-card__title">${escapeHtml(article.title)}</div>
+            ${article.description ? `<div class="news-card__desc">${escapeHtml(article.description)}...</div>` : ''}
+            <div class="news-card__meta">
+              <span>${article.date ? timeAgo(article.date) : 'Live'}</span>
+              <span class="news-card__sentiment news-card__sentiment--${sentiment}">${sentiment}</span>
+            </div>
           </div>
-          <div class="news-card__meta">
-            <span>${date ? timeAgo(date) : 'Live'}</span>
-            <span class="news-card__sentiment news-card__sentiment--${sentiment}">${sentiment}</span>
-          </div>
-        </div>
+        </a>
       `;
     }).join('');
   }
@@ -171,9 +208,6 @@ const News = (() => {
     `;
   }
 
-  /**
-   * Escape HTML to prevent XSS
-   */
   function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
