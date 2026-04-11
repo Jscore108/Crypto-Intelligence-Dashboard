@@ -240,8 +240,12 @@ h1, h2, h3 { font-family: 'Orbitron', sans-serif; font-weight: 700; letter-spaci
 }
 
 .stat-bar:nth-child(1) { animation-delay: 0s; }
-.stat-bar:nth-child(2) { animation-delay: 2s; }
-.stat-bar:nth-child(3) { animation-delay: 4s; }
+.stat-bar:nth-child(2) { animation-delay: 0.8s; }
+.stat-bar:nth-child(3) { animation-delay: 1.6s; }
+.stat-bar:nth-child(4) { animation-delay: 2.4s; }
+.stat-bar:nth-child(5) { animation-delay: 3.2s; }
+.stat-bar:nth-child(6) { animation-delay: 4.0s; }
+.stat-bar:nth-child(7) { animation-delay: 4.8s; }
 
 @keyframes statFloat {
   0%, 100% { transform: translateY(0) translateX(0); }
@@ -275,6 +279,10 @@ h1, h2, h3 { font-family: 'Orbitron', sans-serif; font-weight: 700; letter-spaci
 .stat-bar:nth-child(1)::before { animation-duration: 8s; }
 .stat-bar:nth-child(2)::before { animation-duration: 10s; animation-direction: reverse; }
 .stat-bar:nth-child(3)::before { animation-duration: 12s; }
+.stat-bar:nth-child(4)::before { animation-duration: 9s; animation-direction: reverse; }
+.stat-bar:nth-child(5)::before { animation-duration: 11s; }
+.stat-bar:nth-child(6)::before { animation-duration: 13s; animation-direction: reverse; }
+.stat-bar:nth-child(7)::before { animation-duration: 7s; }
 
 @keyframes statRotate {
   0% { --stat-angle: 0deg; transform: rotate(0deg); }
@@ -338,9 +346,24 @@ h1, h2, h3 { font-family: 'Orbitron', sans-serif; font-weight: 700; letter-spaci
   filter: drop-shadow(0 0 4px rgba(0, 229, 255, 0.2));
 }
 
+/* % toward sell goal */
+.stat-bar__pct {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  position: relative;
+  z-index: 1;
+}
+
 .stat-bar:nth-child(1) .stat-bar__geo { animation-duration: 10s; }
 .stat-bar:nth-child(2) .stat-bar__geo { animation-duration: 14s; animation-direction: reverse; }
 .stat-bar:nth-child(3) .stat-bar__geo { animation-duration: 18s; }
+.stat-bar:nth-child(4) .stat-bar__geo { animation-duration: 12s; animation-direction: reverse; }
+.stat-bar:nth-child(5) .stat-bar__geo { animation-duration: 16s; }
+.stat-bar:nth-child(6) .stat-bar__geo { animation-duration: 20s; animation-direction: reverse; }
+.stat-bar:nth-child(7) .stat-bar__geo { animation-duration: 11s; }
 
 @keyframes geoSpin {
   0% { transform: rotate(0deg); }

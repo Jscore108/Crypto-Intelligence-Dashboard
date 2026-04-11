@@ -102,25 +102,54 @@
         </div>
       </div>
 
-      <!-- Quick Stats — geometric floating cards -->
-      <div style="display:flex;flex-direction:column;gap:10px;justify-content:center;">
+      <!-- Quick Stats + Sell Levels — geometric floating hexagons -->
+      <div style="display:flex;flex-direction:column;gap:8px;justify-content:center;">
         <div class="stat-bar">
           <svg class="stat-bar__geo" viewBox="0 0 24 24"><polygon points="12,2 22,8.5 22,15.5 12,22 2,15.5 2,8.5" fill="none" stroke="rgba(0,229,255,0.3)" stroke-width="1"/></svg>
-          <span class="stat-bar__label">BTC Dominance</span>
+          <span class="stat-bar__label">BTC.D</span>
           <span class="stat-bar__value" id="btcd-value">--</span>
+          <span class="stat-bar__pct" id="btcd-pct">--</span>
           <span class="status-badge status-badge--yellow" id="btcd-badge" style="margin-left:auto;position:relative;z-index:1;">--</span>
         </div>
         <div class="stat-bar">
-          <svg class="stat-bar__geo" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="2" fill="none" stroke="rgba(200,79,255,0.3)" stroke-width="1" transform="rotate(45 12 12)"/></svg>
-          <span class="stat-bar__label">ETH/BTC Ratio</span>
+          <svg class="stat-bar__geo" viewBox="0 0 24 24"><polygon points="12,2 22,8.5 22,15.5 12,22 2,15.5 2,8.5" fill="none" stroke="rgba(200,79,255,0.3)" stroke-width="1"/></svg>
+          <span class="stat-bar__label">ETH/BTC</span>
           <span class="stat-bar__value" id="ethbtc-value">--</span>
           <span class="status-badge status-badge--yellow" id="ethbtc-badge" style="margin-left:auto;position:relative;z-index:1;">--</span>
         </div>
         <div class="stat-bar">
-          <svg class="stat-bar__geo" viewBox="0 0 24 24"><polygon points="12,1 23,18 1,18" fill="none" stroke="rgba(0,255,163,0.3)" stroke-width="1"/><polygon points="12,23 1,6 23,6" fill="none" stroke="rgba(0,255,163,0.2)" stroke-width="1"/></svg>
-          <span class="stat-bar__label">Alt Season Index</span>
+          <svg class="stat-bar__geo" viewBox="0 0 24 24"><polygon points="12,2 22,8.5 22,15.5 12,22 2,15.5 2,8.5" fill="none" stroke="rgba(0,255,163,0.3)" stroke-width="1"/></svg>
+          <span class="stat-bar__label">Alt Season</span>
           <span class="stat-bar__value" id="altseason-value">--</span>
           <span class="status-badge status-badge--yellow" id="altseason-badge" style="margin-left:auto;position:relative;z-index:1;">--</span>
+        </div>
+        <div class="stat-bar">
+          <svg class="stat-bar__geo" viewBox="0 0 24 24"><polygon points="12,2 22,8.5 22,15.5 12,22 2,15.5 2,8.5" fill="none" stroke="rgba(255,42,109,0.3)" stroke-width="1"/></svg>
+          <span class="stat-bar__label">Fear&amp;Greed</span>
+          <span class="stat-bar__value" id="fng-sell-val">--</span>
+          <span class="stat-bar__pct" id="fng-sell-pct">--</span>
+          <span class="status-badge status-badge--yellow" id="fng-sell-badge" style="margin-left:auto;position:relative;z-index:1;">--</span>
+        </div>
+        <div class="stat-bar">
+          <svg class="stat-bar__geo" viewBox="0 0 24 24"><polygon points="12,2 22,8.5 22,15.5 12,22 2,15.5 2,8.5" fill="none" stroke="rgba(255,204,0,0.3)" stroke-width="1"/></svg>
+          <span class="stat-bar__label">MVRV Z</span>
+          <span class="stat-bar__value" id="mvrv-sell-val">--</span>
+          <span class="stat-bar__pct" id="mvrv-sell-pct">--</span>
+          <span class="status-badge status-badge--yellow" id="mvrv-sell-badge" style="margin-left:auto;position:relative;z-index:1;">--</span>
+        </div>
+        <div class="stat-bar">
+          <svg class="stat-bar__geo" viewBox="0 0 24 24"><polygon points="12,2 22,8.5 22,15.5 12,22 2,15.5 2,8.5" fill="none" stroke="rgba(0,229,255,0.3)" stroke-width="1"/></svg>
+          <span class="stat-bar__label">Puell</span>
+          <span class="stat-bar__value" id="puell-sell-val">--</span>
+          <span class="stat-bar__pct" id="puell-sell-pct">--</span>
+          <span class="status-badge status-badge--yellow" id="puell-sell-badge" style="margin-left:auto;position:relative;z-index:1;">--</span>
+        </div>
+        <div class="stat-bar">
+          <svg class="stat-bar__geo" viewBox="0 0 24 24"><polygon points="12,2 22,8.5 22,15.5 12,22 2,15.5 2,8.5" fill="none" stroke="rgba(200,79,255,0.3)" stroke-width="1"/></svg>
+          <span class="stat-bar__label">Pi Cycle</span>
+          <span class="stat-bar__value" id="picycle-sell-val">--</span>
+          <span class="stat-bar__pct" id="picycle-sell-pct">--</span>
+          <span class="status-badge status-badge--yellow" id="picycle-sell-badge" style="margin-left:auto;position:relative;z-index:1;">--</span>
         </div>
       </div>
     </div>
@@ -183,16 +212,7 @@
         <div class="indicator-card__label" id="puell-label">Loading...</div>
       </div>
 
-      <!-- Indicator Sell Thresholds -->
-      <div class="indicator-card" id="card-indicator-levels">
-        <div class="indicator-card__header">
-          <span class="indicator-card__title">Indicator Sell Levels</span>
-          <span class="status-badge status-badge--cyan">THRESHOLDS</span>
-        </div>
-        <div id="indicator-levels-content" style="font-family:'JetBrains Mono',monospace;font-size:0.75rem;">
-          <div style="color:var(--text-muted);">Loading...</div>
-        </div>
-      </div>
+      <!-- Indicator sell levels now in hex stat bars above -->
 
     </div>
 
@@ -397,13 +417,13 @@
         'BTC.D': { value: btcDNorm, weight: 20, raw: btcD.toFixed(1) + '%', contribution: (btcDNorm * 0.20).toFixed(1) },
       }, compositeScore);
 
-      // Update indicator sell levels card
-      renderIndicatorLevels({
-        'Fear & Greed': fngVal ? Number(fngVal) : null,
-        'MVRV Z-Score': estMvrv !== null ? estMvrv : null,
-        'Puell Multiple': puellEst,
-        'BTC Dominance': btcD,
-        'Pi Cycle': piCycle?.ratio || null,
+      // Update hex stat bars with sell level data + % toward goal
+      updateSellHexBars({
+        fng: { value: Number(fngVal) || 0, target: 75 },
+        mvrv: { value: estMvrv, target: 7 },
+        puell: { value: puellEst, target: 2 },
+        btcd: { value: btcD, target: 65 },
+        picycle: { value: piCycle?.ratio || 0, target: 1.0 },
       });
     }
 
@@ -505,29 +525,67 @@
       container.innerHTML = html;
     }
 
-    // --- Render Indicator Sell Levels ---
-    function renderIndicatorLevels(indicatorValues) {
-      const container = document.getElementById('indicator-levels-content');
-      if (!container) return;
+    // --- Update hex stat bars with sell level % toward goal ---
+    function updateSellHexBars(data) {
+      function updateBar(prefix, current, target, suffix) {
+        const valEl = document.getElementById(prefix + '-sell-val');
+        const pctEl = document.getElementById(prefix + '-sell-pct');
+        const badgeEl = document.getElementById(prefix + '-sell-badge');
+        if (!valEl) return;
 
-      const rows = INDICATOR_SELL_LEVELS.map(ind => {
-        const current = indicatorValues[ind.name];
         const hasData = current !== null && current !== undefined;
-        const atSell = hasData && current >= ind.sellAbove;
-        const pctToSell = hasData ? ((ind.sellAbove - current) / ind.sellAbove * 100) : null;
-        const color = atSell ? 'var(--accent-red)' : (pctToSell !== null && pctToSell < 20) ? 'var(--accent-orange)' : 'var(--text-muted)';
+        const pctToward = hasData ? Math.min(100, (current / target) * 100) : 0;
+        const atSell = hasData && current >= target;
 
-        return `<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid rgba(100,120,200,0.06);">
-          <span style="color:var(--text-secondary);font-size:0.72rem;">${ind.name}</span>
-          <div style="display:flex;align-items:center;gap:10px;">
-            <span style="color:${hasData ? 'var(--text-primary)' : 'var(--text-muted)'};font-weight:600;">${hasData ? (typeof current === 'number' ? current.toFixed(1) : current) : '--'}</span>
-            <span style="color:var(--text-muted);font-size:0.65rem;">sell ${ind.label}</span>
-            ${atSell ? '<span style="color:var(--accent-red);font-size:0.6rem;font-weight:700;">SELL</span>' : ''}
-          </div>
-        </div>`;
-      }).join('');
+        valEl.textContent = hasData ? (typeof current === 'number' ? current.toFixed(2) : current) + (suffix || '') : '--';
 
-      container.innerHTML = rows;
+        if (pctEl) {
+          pctEl.textContent = hasData ? Math.round(pctToward) + '% to sell' : '--';
+          pctEl.style.color = atSell ? 'var(--accent-red)' : pctToward > 80 ? 'var(--accent-orange)' : pctToward > 50 ? 'var(--accent-gold)' : 'var(--accent-neon-green)';
+          pctEl.style.background = atSell ? 'rgba(255,45,85,0.1)' : 'rgba(100,120,200,0.08)';
+        }
+
+        if (badgeEl) {
+          if (atSell) {
+            badgeEl.textContent = 'SELL';
+            badgeEl.className = 'status-badge status-badge--red';
+            badgeEl.style.position = 'relative';
+            badgeEl.style.zIndex = '1';
+          } else if (pctToward > 70) {
+            badgeEl.textContent = 'WATCH';
+            badgeEl.className = 'status-badge status-badge--yellow';
+            badgeEl.style.position = 'relative';
+            badgeEl.style.zIndex = '1';
+          } else {
+            badgeEl.textContent = 'SAFE';
+            badgeEl.className = 'status-badge status-badge--green';
+            badgeEl.style.position = 'relative';
+            badgeEl.style.zIndex = '1';
+          }
+        }
+      }
+
+      updateBar('fng', data.fng.value, data.fng.target);
+      updateBar('mvrv', data.mvrv.value, data.mvrv.target);
+      updateBar('puell', data.puell.value, data.puell.target);
+      updateBar('picycle', data.picycle.value, data.picycle.target);
+
+      // BTC Dominance — already in the top 3 bars, update % there
+      const btcdPct = document.getElementById('btcd-pct');
+      if (btcdPct && data.btcd.value) {
+        const pct = Math.min(100, (data.btcd.value / data.btcd.target) * 100);
+        const atSell = data.btcd.value >= data.btcd.target;
+        btcdPct.textContent = Math.round(pct) + '% to sell';
+        btcdPct.style.color = atSell ? 'var(--accent-red)' : pct > 80 ? 'var(--accent-orange)' : pct > 50 ? 'var(--accent-gold)' : 'var(--accent-neon-green)';
+        btcdPct.style.background = atSell ? 'rgba(255,45,85,0.1)' : 'rgba(100,120,200,0.08)';
+        btcdPct.style.padding = '2px 6px';
+        btcdPct.style.borderRadius = '4px';
+        btcdPct.style.fontFamily = "'JetBrains Mono', monospace";
+        btcdPct.style.fontSize = '0.65rem';
+        btcdPct.style.fontWeight = '600';
+        btcdPct.style.position = 'relative';
+        btcdPct.style.zIndex = '1';
+      }
     }
 
     function renderMoversTable(tbodyId, coins) {
