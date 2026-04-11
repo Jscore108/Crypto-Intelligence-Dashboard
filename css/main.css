@@ -221,9 +221,124 @@ h1, h2, h3 { font-family: 'Orbitron', sans-serif; font-weight: 700; letter-spaci
   grid-template-columns: 280px 1fr;
   gap: 16px;
   margin-bottom: 24px;
+  align-items: start;
 }
 
-/* --- Geometric Stat Card --- */
+/* --- Hexagon Bubble Field --- */
+.hex-field {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  align-content: center;
+  min-height: 280px;
+  padding: 10px;
+}
+
+.hex-bubble {
+  width: 120px;
+  height: 130px;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  background: rgba(10, 14, 28, 0.75);
+  position: relative;
+  cursor: grab;
+  user-select: none;
+  transition: filter 0.3s ease;
+  animation: hexFloat 5s ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+  z-index: 1;
+}
+
+.hex-bubble--lg { width: 135px; height: 146px; }
+
+.hex-bubble:active { cursor: grabbing; }
+
+.hex-bubble.dragging {
+  animation-play-state: paused;
+  z-index: 100;
+  filter: brightness(1.4) drop-shadow(0 0 25px rgba(0, 229, 255, 0.5));
+  transition: none;
+}
+
+@keyframes hexFloat {
+  0%, 100% { transform: translate(0, 0); }
+  25% { transform: translate(var(--float-x, 5px), var(--float-y, -8px)); }
+  50% { transform: translate(calc(var(--float-x, 5px) * -0.5), calc(var(--float-y, -8px) * 0.7)); }
+  75% { transform: translate(calc(var(--float-x, 5px) * 0.8), calc(var(--float-y, -8px) * -0.4)); }
+}
+
+.hex-bubble::before {
+  content: '';
+  position: absolute;
+  top: -2px; left: -2px; right: -2px; bottom: -2px;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  background: linear-gradient(135deg, rgba(0,229,255,0.12), rgba(200,79,255,0.08), rgba(0,255,163,0.06));
+  animation: hexBorderRotate 8s linear infinite;
+  z-index: -1;
+}
+
+@keyframes hexBorderRotate {
+  0% { filter: hue-rotate(0deg); }
+  100% { filter: hue-rotate(360deg); }
+}
+
+.hex-bubble:hover {
+  filter: brightness(1.2) drop-shadow(0 0 18px rgba(0, 229, 255, 0.3));
+}
+
+.hex-bubble__inner {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 20px 10px; text-align: center; gap: 2px;
+}
+
+.hex-bubble__label {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.48rem; font-weight: 700;
+  color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em;
+}
+
+.hex-bubble__value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.05rem; font-weight: 800;
+  color: var(--text-primary);
+  text-shadow: 0 0 10px rgba(238, 240, 255, 0.2);
+  line-height: 1.2;
+}
+
+.hex-bubble__target {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.5rem; color: var(--accent-red); opacity: 0.7;
+  text-shadow: 0 0 4px rgba(255, 45, 85, 0.2);
+}
+
+.hex-bubble__pct {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.48rem; font-weight: 600;
+  padding: 1px 4px; border-radius: 3px;
+}
+
+.hex-bubble__badge {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.42rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+@media (max-width: 768px) {
+  .hex-field { min-height: 180px; gap: 6px; }
+  .hex-bubble { width: 90px; height: 98px; }
+  .hex-bubble--lg { width: 100px; height: 109px; }
+  .hex-bubble__value { font-size: 0.8rem; }
+  .hex-bubble__label { font-size: 0.4rem; }
+  .hex-bubble__target { font-size: 0.4rem; }
+}
+
+/* --- Geometric Stat Card (legacy) --- */
 .stat-bar {
   display: flex;
   align-items: center;

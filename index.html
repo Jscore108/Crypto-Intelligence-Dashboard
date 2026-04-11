@@ -102,60 +102,62 @@
         </div>
       </div>
 
-      <!-- Quick Stats + Sell Levels — geometric floating hexagons -->
-      <div style="display:flex;flex-direction:column;gap:8px;justify-content:center;">
-        <div class="stat-bar">
-          <svg class="stat-bar__geo" viewBox="0 0 24 24"><polygon points="12,2 22,8.5 22,15.5 12,22 2,15.5 2,8.5" fill="none" stroke="rgba(0,229,255,0.3)" stroke-width="1"/></svg>
-          <span class="stat-bar__label">BTC.D</span>
-          <span class="stat-bar__value" id="btcd-value">--</span>
-          <span class="stat-bar__target">/ 65%</span>
-          <span class="stat-bar__pct" id="btcd-pct">--</span>
-          <span class="status-badge status-badge--yellow" id="btcd-badge" style="margin-left:auto;position:relative;z-index:1;">--</span>
+      <!-- Draggable Hexagon Bubbles -->
+      <div class="hex-field" id="hex-field">
+        <div class="hex-bubble" data-color="0,229,255" style="--delay:0s;--float-x:8px;--float-y:-12px;">
+          <div class="hex-bubble__inner">
+            <div class="hex-bubble__label">BTC.D</div>
+            <div class="hex-bubble__value" id="btcd-value">--</div>
+            <div class="hex-bubble__target">sell @ 65%</div>
+            <div class="hex-bubble__pct" id="btcd-pct"></div>
+          </div>
         </div>
-        <div class="stat-bar">
-          <svg class="stat-bar__geo" viewBox="0 0 24 24"><polygon points="12,2 22,8.5 22,15.5 12,22 2,15.5 2,8.5" fill="none" stroke="rgba(200,79,255,0.3)" stroke-width="1"/></svg>
-          <span class="stat-bar__label">ETH/BTC</span>
-          <span class="stat-bar__value" id="ethbtc-value">--</span>
-          <span class="status-badge status-badge--yellow" id="ethbtc-badge" style="margin-left:auto;position:relative;z-index:1;">--</span>
+        <div class="hex-bubble" data-color="200,79,255" style="--delay:0.8s;--float-x:-6px;--float-y:-10px;">
+          <div class="hex-bubble__inner">
+            <div class="hex-bubble__label">ETH/BTC</div>
+            <div class="hex-bubble__value" id="ethbtc-value">--</div>
+            <div class="hex-bubble__badge" id="ethbtc-badge">--</div>
+          </div>
         </div>
-        <div class="stat-bar">
-          <svg class="stat-bar__geo" viewBox="0 0 24 24"><polygon points="12,2 22,8.5 22,15.5 12,22 2,15.5 2,8.5" fill="none" stroke="rgba(0,255,163,0.3)" stroke-width="1"/></svg>
-          <span class="stat-bar__label">Alt Season</span>
-          <span class="stat-bar__value" id="altseason-value">--</span>
-          <span class="stat-bar__target">/ 75</span>
-          <span class="status-badge status-badge--yellow" id="altseason-badge" style="margin-left:auto;position:relative;z-index:1;">--</span>
+        <div class="hex-bubble" data-color="0,255,163" style="--delay:1.6s;--float-x:10px;--float-y:-8px;">
+          <div class="hex-bubble__inner">
+            <div class="hex-bubble__label">Alt Season</div>
+            <div class="hex-bubble__value" id="altseason-value">--</div>
+            <div class="hex-bubble__target">sell @ 75</div>
+            <div class="hex-bubble__badge" id="altseason-badge">--</div>
+          </div>
         </div>
-        <div class="stat-bar">
-          <svg class="stat-bar__geo" viewBox="0 0 24 24"><polygon points="12,2 22,8.5 22,15.5 12,22 2,15.5 2,8.5" fill="none" stroke="rgba(255,42,109,0.3)" stroke-width="1"/></svg>
-          <span class="stat-bar__label">Fear&amp;Greed</span>
-          <span class="stat-bar__value" id="fng-sell-val">--</span>
-          <span class="stat-bar__target">/ 75</span>
-          <span class="stat-bar__pct" id="fng-sell-pct">--</span>
-          <span class="status-badge status-badge--yellow" id="fng-sell-badge" style="margin-left:auto;position:relative;z-index:1;">--</span>
+        <div class="hex-bubble hex-bubble--lg" data-color="255,42,109" style="--delay:2.4s;--float-x:-8px;--float-y:-14px;">
+          <div class="hex-bubble__inner">
+            <div class="hex-bubble__label">Fear &amp; Greed</div>
+            <div class="hex-bubble__value" id="fng-sell-val">--</div>
+            <div class="hex-bubble__target">sell @ 75</div>
+            <div class="hex-bubble__pct" id="fng-sell-pct"></div>
+          </div>
         </div>
-        <div class="stat-bar">
-          <svg class="stat-bar__geo" viewBox="0 0 24 24"><polygon points="12,2 22,8.5 22,15.5 12,22 2,15.5 2,8.5" fill="none" stroke="rgba(255,204,0,0.3)" stroke-width="1"/></svg>
-          <span class="stat-bar__label">MVRV Z</span>
-          <span class="stat-bar__value" id="mvrv-sell-val">--</span>
-          <span class="stat-bar__target">/ 7.0</span>
-          <span class="stat-bar__pct" id="mvrv-sell-pct">--</span>
-          <span class="status-badge status-badge--yellow" id="mvrv-sell-badge" style="margin-left:auto;position:relative;z-index:1;">--</span>
+        <div class="hex-bubble hex-bubble--lg" data-color="255,204,0" style="--delay:3.2s;--float-x:6px;--float-y:-10px;">
+          <div class="hex-bubble__inner">
+            <div class="hex-bubble__label">MVRV Z</div>
+            <div class="hex-bubble__value" id="mvrv-sell-val">--</div>
+            <div class="hex-bubble__target">sell @ 7.0</div>
+            <div class="hex-bubble__pct" id="mvrv-sell-pct"></div>
+          </div>
         </div>
-        <div class="stat-bar">
-          <svg class="stat-bar__geo" viewBox="0 0 24 24"><polygon points="12,2 22,8.5 22,15.5 12,22 2,15.5 2,8.5" fill="none" stroke="rgba(0,229,255,0.3)" stroke-width="1"/></svg>
-          <span class="stat-bar__label">Puell</span>
-          <span class="stat-bar__value" id="puell-sell-val">--</span>
-          <span class="stat-bar__target">/ 2.0</span>
-          <span class="stat-bar__pct" id="puell-sell-pct">--</span>
-          <span class="status-badge status-badge--yellow" id="puell-sell-badge" style="margin-left:auto;position:relative;z-index:1;">--</span>
+        <div class="hex-bubble" data-color="0,229,255" style="--delay:4s;--float-x:-10px;--float-y:-6px;">
+          <div class="hex-bubble__inner">
+            <div class="hex-bubble__label">Puell</div>
+            <div class="hex-bubble__value" id="puell-sell-val">--</div>
+            <div class="hex-bubble__target">sell @ 2.0</div>
+            <div class="hex-bubble__pct" id="puell-sell-pct"></div>
+          </div>
         </div>
-        <div class="stat-bar">
-          <svg class="stat-bar__geo" viewBox="0 0 24 24"><polygon points="12,2 22,8.5 22,15.5 12,22 2,15.5 2,8.5" fill="none" stroke="rgba(200,79,255,0.3)" stroke-width="1"/></svg>
-          <span class="stat-bar__label">Pi Cycle</span>
-          <span class="stat-bar__value" id="picycle-sell-val">--</span>
-          <span class="stat-bar__target">/ 1.00</span>
-          <span class="stat-bar__pct" id="picycle-sell-pct">--</span>
-          <span class="status-badge status-badge--yellow" id="picycle-sell-badge" style="margin-left:auto;position:relative;z-index:1;">--</span>
+        <div class="hex-bubble" data-color="200,79,255" style="--delay:4.8s;--float-x:12px;--float-y:-8px;">
+          <div class="hex-bubble__inner">
+            <div class="hex-bubble__label">Pi Cycle</div>
+            <div class="hex-bubble__value" id="picycle-sell-val">--</div>
+            <div class="hex-bubble__target">sell @ 1.00</div>
+            <div class="hex-bubble__pct" id="picycle-sell-pct"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -712,6 +714,55 @@
     (async function init() {
       await updateDashboard();
       setInterval(updateDashboard, 60000);
+    })();
+
+    // --- Draggable Hex Bubbles ---
+    (function initDrag() {
+      const hexes = document.querySelectorAll('.hex-bubble');
+      let dragEl = null, offsetX = 0, offsetY = 0;
+
+      hexes.forEach(hex => {
+        hex.addEventListener('mousedown', startDrag);
+        hex.addEventListener('touchstart', startDrag, { passive: false });
+      });
+
+      function startDrag(e) {
+        e.preventDefault();
+        dragEl = e.currentTarget;
+        dragEl.classList.add('dragging');
+        dragEl.style.position = 'relative';
+        const pt = e.touches ? e.touches[0] : e;
+        const rect = dragEl.getBoundingClientRect();
+        offsetX = pt.clientX - rect.left - rect.width / 2;
+        offsetY = pt.clientY - rect.top - rect.height / 2;
+        document.addEventListener('mousemove', onDrag);
+        document.addEventListener('mouseup', stopDrag);
+        document.addEventListener('touchmove', onDrag, { passive: false });
+        document.addEventListener('touchend', stopDrag);
+      }
+
+      function onDrag(e) {
+        if (!dragEl) return;
+        e.preventDefault();
+        const pt = e.touches ? e.touches[0] : e;
+        const field = document.getElementById('hex-field');
+        const fieldRect = field.getBoundingClientRect();
+        const x = pt.clientX - fieldRect.left - offsetX - dragEl.offsetWidth / 2;
+        const y = pt.clientY - fieldRect.top - offsetY - dragEl.offsetHeight / 2;
+        dragEl.style.left = x + 'px';
+        dragEl.style.top = y + 'px';
+      }
+
+      function stopDrag() {
+        if (dragEl) {
+          dragEl.classList.remove('dragging');
+          dragEl = null;
+        }
+        document.removeEventListener('mousemove', onDrag);
+        document.removeEventListener('mouseup', stopDrag);
+        document.removeEventListener('touchmove', onDrag);
+        document.removeEventListener('touchend', stopDrag);
+      }
     })();
   </script>
 </body>
