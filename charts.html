@@ -116,7 +116,15 @@
 
     async function loadAllCharts(days) {
       currentDays = days;
-      // Load all charts in parallel for speed
+      // Prefetch all unique data in parallel (only 4 calls)
+      // Then charts render instantly from cache
+      await Promise.all([
+        API.getHistoricalPrices('bitcoin', days).catch(() => null),
+        API.getHistoricalPrices('ethereum', days).catch(() => null),
+        API.getHistoricalPrices('solana', days).catch(() => null),
+        API.getFearGreedHistory().catch(() => null),
+      ]);
+      // All data cached — render all charts (no new API calls)
       await Promise.all([
         Charts.renderBTCPrice('chart-btc-price', days),
         Charts.renderETHPrice('chart-eth-price', days),

@@ -28,19 +28,30 @@ const API = (() => {
     cache[key] = { data, timestamp: Date.now(), type };
   }
 
-  // --- Fetch with timeout (no artificial delay) ---
-  async function rateLimitedFetch(url, options = {}) {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 15000);
+  // --- Fetch with timeout and retry on rate limit ---
+  async function rateLimitedFetch(url, options = {}, retries = 2) {
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 15000);
 
-    try {
-      const response = await fetch(url, { ...options, signal: controller.signal });
-      clearTimeout(timeout);
-      if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      return await response.json();
-    } catch (err) {
-      clearTimeout(timeout);
-      throw err;
+      try {
+        const response = await fetch(url, { ...options, signal: controller.signal });
+        clearTimeout(timeout);
+        if (response.status === 429 && attempt < retries) {
+          // Rate limited — wait and retry
+          await new Promise(r => setTimeout(r, 2000 * (attempt + 1)));
+          continue;
+        }
+        if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        return await response.json();
+      } catch (err) {
+        clearTimeout(timeout);
+        if (attempt < retries && err.name !== 'AbortError') {
+          await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
+          continue;
+        }
+        throw err;
+      }
     }
   }
 
