@@ -83,84 +83,81 @@
   <!-- ===== Page Content ===== -->
   <main class="page-content">
 
-    <!-- Full-width Hexagon Field — scattered with center gap for background -->
-    <div class="hex-field" id="hex-field">
-      <!-- Left cluster -->
-      <div class="hex-bubble hex-pos-1" style="--delay:0s;--float-x:8px;--float-y:-12px;">
-        <div class="hex-bubble__inner">
-          <div class="hex-bubble__label">BTC.D</div>
-          <div class="hex-bubble__value" id="btcd-value">--</div>
-          <div class="hex-bubble__target">sell @ 65%</div>
-          <div class="hex-bubble__pct" id="btcd-pct"></div>
-        </div>
-      </div>
-      <div class="hex-bubble hex-pos-2" style="--delay:0.6s;--float-x:-5px;--float-y:-10px;">
-        <div class="hex-bubble__inner">
-          <div class="hex-bubble__label">Pi Cycle</div>
-          <div class="hex-bubble__value" id="picycle-sell-val">--</div>
-          <div class="hex-bubble__target">sell @ 1.00</div>
-          <div class="hex-bubble__pct" id="picycle-sell-pct"></div>
-        </div>
-      </div>
-      <div class="hex-bubble hex-pos-3" style="--delay:1.2s;--float-x:10px;--float-y:-6px;">
-        <div class="hex-bubble__inner">
-          <div class="hex-bubble__label">Alt Season</div>
-          <div class="hex-bubble__value" id="altseason-value">--</div>
-          <div class="hex-bubble__target">sell @ 75</div>
-          <div class="hex-bubble__badge" id="altseason-badge">--</div>
-        </div>
-      </div>
-      <div class="hex-bubble hex-pos-4" style="--delay:1.8s;--float-x:-8px;--float-y:-8px;">
-        <div class="hex-bubble__inner">
-          <div class="hex-bubble__label">ETH/BTC</div>
-          <div class="hex-bubble__value" id="ethbtc-value">--</div>
-          <div class="hex-bubble__badge" id="ethbtc-badge">--</div>
-        </div>
-      </div>
+    <!-- Composite Score + Summary Row -->
+    <div class="dashboard-top-grid">
 
-      <!-- Center: Composite Gauge -->
-      <div class="hex-center">
+      <!-- Composite Gauge + Breakdown -->
+      <div style="display:flex;flex-direction:column;gap:12px;">
         <div class="gauge-container" id="composite-gauge">
           <div class="skeleton" style="width:200px;height:120px;"></div>
         </div>
+        <div class="indicator-card" id="composite-breakdown" style="padding:12px;">
+          <div class="indicator-card__header" style="margin-bottom:6px;">
+            <span class="indicator-card__title">Score Breakdown</span>
+            <span class="status-badge status-badge--cyan">WEIGHTS</span>
+          </div>
+          <div id="composite-breakdown-content" style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--text-muted);">
+            Loading indicators...
+          </div>
+        </div>
       </div>
 
-      <!-- Right cluster -->
-      <div class="hex-bubble hex-bubble--lg hex-pos-5" style="--delay:2.4s;--float-x:6px;--float-y:-14px;">
-        <div class="hex-bubble__inner">
-          <div class="hex-bubble__label">Fear &amp; Greed</div>
-          <div class="hex-bubble__value" id="fng-sell-val">--</div>
-          <div class="hex-bubble__target">sell @ 75</div>
-          <div class="hex-bubble__pct" id="fng-sell-pct"></div>
+      <!-- Draggable Hexagon Bubbles -->
+      <div class="hex-field" id="hex-field">
+        <div class="hex-bubble" data-color="0,229,255" style="--delay:0s;--float-x:8px;--float-y:-12px;">
+          <div class="hex-bubble__inner">
+            <div class="hex-bubble__label">BTC.D</div>
+            <div class="hex-bubble__value" id="btcd-value">--</div>
+            <div class="hex-bubble__target">sell @ 65%</div>
+            <div class="hex-bubble__pct" id="btcd-pct"></div>
+          </div>
         </div>
-      </div>
-      <div class="hex-bubble hex-bubble--lg hex-pos-6" style="--delay:3s;--float-x:-6px;--float-y:-10px;">
-        <div class="hex-bubble__inner">
-          <div class="hex-bubble__label">MVRV Z</div>
-          <div class="hex-bubble__value" id="mvrv-sell-val">--</div>
-          <div class="hex-bubble__target">sell @ 7.0</div>
-          <div class="hex-bubble__pct" id="mvrv-sell-pct"></div>
+        <div class="hex-bubble" data-color="200,79,255" style="--delay:0.8s;--float-x:-6px;--float-y:-10px;">
+          <div class="hex-bubble__inner">
+            <div class="hex-bubble__label">ETH/BTC</div>
+            <div class="hex-bubble__value" id="ethbtc-value">--</div>
+            <div class="hex-bubble__badge" id="ethbtc-badge">--</div>
+          </div>
         </div>
-      </div>
-      <div class="hex-bubble hex-pos-7" style="--delay:3.6s;--float-x:10px;--float-y:-8px;">
-        <div class="hex-bubble__inner">
-          <div class="hex-bubble__label">Puell</div>
-          <div class="hex-bubble__value" id="puell-sell-val">--</div>
-          <div class="hex-bubble__target">sell @ 2.0</div>
-          <div class="hex-bubble__pct" id="puell-sell-pct"></div>
+        <div class="hex-bubble" data-color="0,255,163" style="--delay:1.6s;--float-x:10px;--float-y:-8px;">
+          <div class="hex-bubble__inner">
+            <div class="hex-bubble__label">Alt Season</div>
+            <div class="hex-bubble__value" id="altseason-value">--</div>
+            <div class="hex-bubble__target">sell @ 75</div>
+            <div class="hex-bubble__badge" id="altseason-badge">--</div>
+          </div>
         </div>
-      </div>
-    </div>
-
-    <!-- Score Breakdown (below hex field) -->
-    <div style="max-width:500px;margin:0 auto 24px;">
-      <div class="indicator-card" id="composite-breakdown" style="padding:12px;">
-        <div class="indicator-card__header" style="margin-bottom:6px;">
-          <span class="indicator-card__title">Score Breakdown</span>
-          <span class="status-badge status-badge--cyan">WEIGHTS</span>
+        <div class="hex-bubble hex-bubble--lg" data-color="255,42,109" style="--delay:2.4s;--float-x:-8px;--float-y:-14px;">
+          <div class="hex-bubble__inner">
+            <div class="hex-bubble__label">Fear &amp; Greed</div>
+            <div class="hex-bubble__value" id="fng-sell-val">--</div>
+            <div class="hex-bubble__target">sell @ 75</div>
+            <div class="hex-bubble__pct" id="fng-sell-pct"></div>
+          </div>
         </div>
-        <div id="composite-breakdown-content" style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--text-muted);">
-          Loading indicators...
+        <div class="hex-bubble hex-bubble--lg" data-color="255,204,0" style="--delay:3.2s;--float-x:6px;--float-y:-10px;">
+          <div class="hex-bubble__inner">
+            <div class="hex-bubble__label">MVRV Z</div>
+            <div class="hex-bubble__value" id="mvrv-sell-val">--</div>
+            <div class="hex-bubble__target">sell @ 7.0</div>
+            <div class="hex-bubble__pct" id="mvrv-sell-pct"></div>
+          </div>
+        </div>
+        <div class="hex-bubble" data-color="0,229,255" style="--delay:4s;--float-x:-10px;--float-y:-6px;">
+          <div class="hex-bubble__inner">
+            <div class="hex-bubble__label">Puell</div>
+            <div class="hex-bubble__value" id="puell-sell-val">--</div>
+            <div class="hex-bubble__target">sell @ 2.0</div>
+            <div class="hex-bubble__pct" id="puell-sell-pct"></div>
+          </div>
+        </div>
+        <div class="hex-bubble" data-color="200,79,255" style="--delay:4.8s;--float-x:12px;--float-y:-8px;">
+          <div class="hex-bubble__inner">
+            <div class="hex-bubble__label">Pi Cycle</div>
+            <div class="hex-bubble__value" id="picycle-sell-val">--</div>
+            <div class="hex-bubble__target">sell @ 1.00</div>
+            <div class="hex-bubble__pct" id="picycle-sell-pct"></div>
+          </div>
         </div>
       </div>
     </div>
