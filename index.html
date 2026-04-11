@@ -101,8 +101,8 @@
 
     <!-- Hexagon Indicator Field — scattered across full width, center open for BTC symbol -->
     <div class="hex-scatter" id="hex-field">
-      <!-- Top-left: BTC.D -->
-      <div class="hex-bubble" style="left:3%;top:5%;--delay:0s;--float-x:6px;--float-y:-10px;">
+      <!-- Left column -->
+      <div class="hex-bubble" style="left:1%;top:3%;--delay:0s;--float-x:6px;--float-y:-10px;">
         <div class="hex-bubble__inner">
           <div class="hex-bubble__label">BTC.D</div>
           <div class="hex-bubble__value" id="btcd-value">--</div>
@@ -110,17 +110,7 @@
           <div class="hex-bubble__pct" id="btcd-pct"></div>
         </div>
       </div>
-      <!-- Mid-left: MVRV Z -->
-      <div class="hex-bubble" style="left:22%;top:18%;--delay:0.7s;--float-x:-5px;--float-y:-8px;">
-        <div class="hex-bubble__inner">
-          <div class="hex-bubble__label">MVRV Z</div>
-          <div class="hex-bubble__value" id="mvrv-sell-val">--</div>
-          <div class="hex-bubble__target">sell @ 7.0</div>
-          <div class="hex-bubble__pct" id="mvrv-sell-pct"></div>
-        </div>
-      </div>
-      <!-- Left: Pi Cycle -->
-      <div class="hex-bubble" style="left:2%;top:48%;--delay:1.4s;--float-x:8px;--float-y:-6px;">
+      <div class="hex-bubble" style="left:1%;top:40%;--delay:0.9s;--float-x:8px;--float-y:-6px;">
         <div class="hex-bubble__inner">
           <div class="hex-bubble__label">Pi Cycle</div>
           <div class="hex-bubble__value" id="picycle-sell-val">--</div>
@@ -128,8 +118,7 @@
           <div class="hex-bubble__pct" id="picycle-sell-pct"></div>
         </div>
       </div>
-      <!-- Bottom-center-left: Alt Season -->
-      <div class="hex-bubble" style="left:20%;top:68%;--delay:2.1s;--float-x:-6px;--float-y:-10px;">
+      <div class="hex-bubble" style="left:14%;top:72%;--delay:1.8s;--float-x:-6px;--float-y:-10px;">
         <div class="hex-bubble__inner">
           <div class="hex-bubble__label">Alt Season</div>
           <div class="hex-bubble__value" id="altseason-value">--</div>
@@ -137,17 +126,9 @@
           <div class="hex-bubble__badge" id="altseason-badge">--</div>
         </div>
       </div>
-      <!-- Top-center-right: Fear & Greed -->
-      <div class="hex-bubble hex-bubble--lg" style="left:50%;top:3%;--delay:2.8s;--float-x:5px;--float-y:-12px;">
-        <div class="hex-bubble__inner">
-          <div class="hex-bubble__label">Fear &amp; Greed</div>
-          <div class="hex-bubble__value" id="fng-sell-val">--</div>
-          <div class="hex-bubble__target">sell @ 75</div>
-          <div class="hex-bubble__pct" id="fng-sell-pct"></div>
-        </div>
-      </div>
-      <!-- Top-right: Puell -->
-      <div class="hex-bubble" style="right:2%;top:5%;--delay:3.5s;--float-x:-8px;--float-y:-8px;">
+
+      <!-- Right column -->
+      <div class="hex-bubble hex-bubble--lg" style="right:1%;top:3%;--delay:2.4s;--float-x:-8px;--float-y:-8px;">
         <div class="hex-bubble__inner">
           <div class="hex-bubble__label">Puell</div>
           <div class="hex-bubble__value" id="puell-sell-val">--</div>
@@ -155,12 +136,29 @@
           <div class="hex-bubble__pct" id="puell-sell-pct"></div>
         </div>
       </div>
-      <!-- Bottom-right: ETH/BTC -->
-      <div class="hex-bubble hex-bubble--lg" style="right:5%;top:62%;--delay:4.2s;--float-x:10px;--float-y:-6px;">
+      <div class="hex-bubble hex-bubble--lg" style="right:1%;top:40%;--delay:3.1s;--float-x:5px;--float-y:-12px;">
+        <div class="hex-bubble__inner">
+          <div class="hex-bubble__label">Fear &amp; Greed</div>
+          <div class="hex-bubble__value" id="fng-sell-val">--</div>
+          <div class="hex-bubble__target">sell @ 75</div>
+          <div class="hex-bubble__pct" id="fng-sell-pct"></div>
+        </div>
+      </div>
+      <div class="hex-bubble hex-bubble--lg" style="right:8%;top:72%;--delay:3.8s;--float-x:10px;--float-y:-6px;">
         <div class="hex-bubble__inner">
           <div class="hex-bubble__label">ETH/BTC</div>
           <div class="hex-bubble__value" id="ethbtc-value">--</div>
           <div class="hex-bubble__badge" id="ethbtc-badge">--</div>
+        </div>
+      </div>
+
+      <!-- Center-top: MVRV (small, above BTC symbol) -->
+      <div class="hex-bubble" style="left:38%;top:2%;--delay:4.5s;--float-x:-5px;--float-y:-8px;">
+        <div class="hex-bubble__inner">
+          <div class="hex-bubble__label">MVRV Z</div>
+          <div class="hex-bubble__value" id="mvrv-sell-val">--</div>
+          <div class="hex-bubble__target">sell @ 7.0</div>
+          <div class="hex-bubble__pct" id="mvrv-sell-pct"></div>
         </div>
       </div>
     </div>
