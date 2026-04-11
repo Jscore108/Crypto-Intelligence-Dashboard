@@ -65,10 +65,13 @@ const API = (() => {
     ETH: 'ethereum',
     SOL: 'solana',
     LINK: 'chainlink',
-    BRETT: 'brett-based',
+    BRETT: 'brett-base', // fetched via contract fallback
     POPCAT: 'popcat',
     WIF: 'dogwifcoin',
   };
+
+  // BRETT contract on Base chain
+  const BRETT_CONTRACT = '0x532f27101965dd16442e59d40670faf5ebb142e4';
 
   const ALL_IDS = Object.values(COIN_IDS).join(',');
 
@@ -78,7 +81,7 @@ const API = (() => {
 
   /**
    * Fetch current prices for all tracked coins
-   * Returns: { bitcoin: { usd, usd_24h_change, usd_market_cap }, ... }
+   * Falls back to contract-based lookup for BRETT
    */
   async function getPrices() {
     const cacheKey = 'prices_all';
@@ -86,9 +89,33 @@ const API = (() => {
     if (cached) return cached;
 
     try {
+      // Fetch main coins by ID
+      const mainIds = 'bitcoin,ethereum,solana,chainlink,popcat,dogwifcoin';
       const data = await rateLimitedFetch(
-        `${COINGECKO_BASE}/simple/price?ids=${ALL_IDS}&vs_currencies=usd&include_24hr_change=true&include_market_cap=true`
+        `${COINGECKO_BASE}/simple/price?ids=${mainIds}&vs_currencies=usd&include_24hr_change=true&include_market_cap=true`
       );
+
+      // Fetch BRETT via contract address on Base chain
+      try {
+        const brettData = await rateLimitedFetch(
+          `${COINGECKO_BASE}/simple/token_price/base?contract_addresses=${BRETT_CONTRACT}&vs_currencies=usd&include_24hr_change=true&include_market_cap=true`
+        );
+        if (brettData && brettData[BRETT_CONTRACT.toLowerCase()]) {
+          data['brett-base'] = brettData[BRETT_CONTRACT.toLowerCase()];
+        }
+      } catch (e) {
+        console.warn('[API] BRETT contract fetch failed, trying coin ID fallbacks');
+        // Try common BRETT coin IDs as fallback
+        for (const tryId of ['brett', 'brett-based', 'based-brett']) {
+          try {
+            const fb = await rateLimitedFetch(
+              `${COINGECKO_BASE}/simple/price?ids=${tryId}&vs_currencies=usd&include_24hr_change=true&include_market_cap=true`
+            );
+            if (fb && fb[tryId]) { data['brett-base'] = fb[tryId]; break; }
+          } catch (_) { /* try next */ }
+        }
+      }
+
       setCache(cacheKey, data, 'prices');
       return data;
     } catch (err) {
