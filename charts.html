@@ -71,16 +71,6 @@
         </div>
       </div>
 
-      <!-- BTC Rainbow Chart -->
-      <div class="chart-panel chart-panel--full">
-        <div class="chart-panel__header">
-          <div class="chart-panel__title">BTC Rainbow Chart — Log Regression Bands</div>
-        </div>
-        <div class="chart-panel__body" id="chart-rainbow" style="height:400px;">
-          <div class="chart-loading loading-pulse">Loading chart...</div>
-        </div>
-      </div>
-
       <!-- ETH Price -->
       <div class="chart-panel">
         <div class="chart-panel__header">
@@ -154,7 +144,6 @@
       // All data cached — render all charts
       await Promise.all([
         Charts.renderBTCPrice('chart-btc-price', days),
-        Charts.renderRainbow('chart-rainbow'),
         Charts.renderETHPrice('chart-eth-price', days),
         Charts.renderETHBTC('chart-ethbtc', days),
         Charts.renderFearGreed('chart-fng'),
