@@ -371,14 +371,21 @@ const Charts = (() => {
       ...getDefaultOptions(),
       width: container.clientWidth,
       height: 400,
+      rightPriceScale: {
+        borderColor: CHART_COLORS.grid,
+        mode: 1, // logarithmic scale
+      },
     });
 
     try {
-      // Try max first, fall back to whatever days are cached
+      // Always fetch max for rainbow — need full history
       let data = null;
-      try { data = await API.getHistoricalPrices('bitcoin', 'max'); } catch (_) {}
-      if (!data?.prices || data.prices.length < 50) {
-        try { data = await API.getHistoricalPrices('bitcoin', 365); } catch (_) {}
+      for (const days of ['max', 1825, 365]) {
+        try {
+          data = await API.getHistoricalPrices('bitcoin', days);
+          if (data?.prices?.length > 100) break;
+        } catch (_) {}
+      }
       }
       if (!data?.prices || data.prices.length < 50) throw new Error('No data');
 
