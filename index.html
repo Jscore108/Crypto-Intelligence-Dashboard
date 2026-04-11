@@ -492,7 +492,7 @@
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
             <div style="display:flex;align-items:center;gap:8px;">
               <span style="font-family:'Orbitron',sans-serif;font-size:0.85rem;font-weight:800;color:var(--accent-neon-blue);text-shadow:0 0 8px rgba(0,240,255,0.3);">${coin}</span>
-              <span class="font-mono" style="font-size:0.85rem;color:var(--text-primary);">${formatPrice(current)}</span>
+              <span class="font-mono" data-coin-price="${coin}" style="font-size:0.85rem;color:var(--text-primary);">${formatPrice(current)}</span>
               ${changeStr}
             </div>
           </div>`;
@@ -717,14 +717,14 @@
 
     // --- Init ---
     // --- Track previous prices for flash detection ---
-    let prevBtcPrice = 0, prevEthPrice = 0;
+    let prevPrices = {};
 
-    function flashPrice(elId, newPrice, oldPrice) {
+    function flashPrice(elId, newPrice, oldPrice, directEl) {
       if (oldPrice === 0) return;
-      const el = document.getElementById(elId);
+      const el = directEl || document.getElementById(elId);
       if (!el) return;
       el.classList.remove('price-flash-up', 'price-flash-down');
-      void el.offsetWidth; // force reflow
+      void el.offsetWidth;
       if (newPrice > oldPrice) el.classList.add('price-flash-up');
       else if (newPrice < oldPrice) el.classList.add('price-flash-down');
     }
@@ -732,28 +732,41 @@
     // --- Fast price-only refresh (every 15s) ---
     async function updatePricesOnly() {
       try {
-        // Clear cache so we get fresh prices
         const prices = await API.getPrices();
         if (!prices) return;
 
+        // Flash + update top bar BTC/ETH
         const btc = prices.bitcoin, eth = prices.ethereum;
         if (btc) {
-          flashPrice('ticker-btc-price', btc.usd, prevBtcPrice);
-          prevBtcPrice = btc.usd;
+          flashPrice('ticker-btc-price', btc.usd, prevPrices.btc || 0);
+          prevPrices.btc = btc.usd;
           document.getElementById('ticker-btc-price').textContent = formatPrice(btc.usd);
           const el = document.getElementById('ticker-btc-change');
           el.textContent = formatPct(btc.usd_24h_change);
           el.className = `top-bar__change top-bar__change--${btc.usd_24h_change >= 0 ? 'up' : 'down'}`;
         }
         if (eth) {
-          flashPrice('ticker-eth-price', eth.usd, prevEthPrice);
-          prevEthPrice = eth.usd;
+          flashPrice('ticker-eth-price', eth.usd, prevPrices.eth || 0);
+          prevPrices.eth = eth.usd;
           document.getElementById('ticker-eth-price').textContent = formatPrice(eth.usd);
           const el = document.getElementById('ticker-eth-change');
           el.textContent = formatPct(eth.usd_24h_change);
           el.className = `top-bar__change top-bar__change--${eth.usd_24h_change >= 0 ? 'up' : 'down'}`;
         }
-        // Update sell targets too
+
+        // Flash all coin prices in sell targets
+        for (const [coin, coinId] of Object.entries(COIN_IDS_MAP)) {
+          const p = prices[coinId];
+          if (!p) continue;
+          const prevKey = 'sell_' + coin;
+          // Find all value elements in sell target cards that show this coin's price
+          document.querySelectorAll(`[data-coin-price="${coin}"]`).forEach(el => {
+            flashPrice(null, p.usd, prevPrices[prevKey] || 0, el);
+          });
+          prevPrices[prevKey] = p.usd;
+        }
+
+        // Update sell targets
         renderSellTargets(prices);
         document.getElementById('ticker-updated').textContent = 'Live · ' + new Date().toLocaleTimeString();
       } catch (_) {}
