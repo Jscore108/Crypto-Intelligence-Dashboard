@@ -69,23 +69,23 @@
 
 /* Glow variants */
 .indicator-card--green {
-  border-color: rgba(0, 255, 136, 0.12);
-  box-shadow: 0 0 25px rgba(0, 255, 136, 0.06), inset 0 0 30px rgba(0, 255, 136, 0.02);
+  border-color: rgba(0, 255, 163, 0.2);
+  box-shadow: 0 0 25px rgba(0, 255, 163, 0.1), inset 0 0 40px rgba(0, 255, 163, 0.03);
 }
-.indicator-card--green .indicator-card__value { text-shadow: 0 0 15px rgba(0, 255, 136, 0.2); }
+.indicator-card--green .indicator-card__value { color: var(--accent-neon-green); text-shadow: 0 0 20px rgba(0, 255, 163, 0.4); }
 
 .indicator-card--yellow {
-  border-color: rgba(255, 215, 0, 0.12);
-  box-shadow: 0 0 25px rgba(255, 215, 0, 0.06), inset 0 0 30px rgba(255, 215, 0, 0.02);
+  border-color: rgba(255, 204, 0, 0.2);
+  box-shadow: 0 0 25px rgba(255, 204, 0, 0.1), inset 0 0 40px rgba(255, 204, 0, 0.03);
 }
-.indicator-card--yellow .indicator-card__value { text-shadow: 0 0 15px rgba(255, 215, 0, 0.2); }
+.indicator-card--yellow .indicator-card__value { color: var(--accent-gold); text-shadow: 0 0 20px rgba(255, 204, 0, 0.4); }
 
 .indicator-card--red {
-  border-color: rgba(255, 56, 96, 0.12);
-  box-shadow: 0 0 25px rgba(255, 56, 96, 0.06), inset 0 0 30px rgba(255, 56, 96, 0.02);
+  border-color: rgba(255, 45, 85, 0.2);
+  box-shadow: 0 0 30px rgba(255, 45, 85, 0.12), inset 0 0 40px rgba(255, 45, 85, 0.03);
   animation: cardDanger 3s ease-in-out infinite;
 }
-.indicator-card--red .indicator-card__value { text-shadow: 0 0 15px rgba(255, 56, 96, 0.3); }
+.indicator-card--red .indicator-card__value { color: var(--accent-red); text-shadow: 0 0 20px rgba(255, 45, 85, 0.5); }
 
 @keyframes cardDanger {
   0%, 100% { box-shadow: 0 0 25px rgba(255, 56, 96, 0.06); }
@@ -139,12 +139,12 @@
   transition: width 1s ease-out; position: relative;
 }
 
-.progress-bar__fill--green { background: linear-gradient(90deg, #00cc6a, var(--accent-neon-green)); box-shadow: 0 0 8px rgba(0, 255, 136, 0.3); }
-.progress-bar__fill--yellow { background: linear-gradient(90deg, #dda020, var(--accent-gold)); box-shadow: 0 0 8px rgba(255, 215, 0, 0.3); }
-.progress-bar__fill--orange { background: linear-gradient(90deg, var(--accent-orange), #ff9500); box-shadow: 0 0 8px rgba(255, 107, 53, 0.3); }
+.progress-bar__fill--green { background: linear-gradient(90deg, #00cc6a, var(--accent-neon-green)); box-shadow: 0 0 10px rgba(0, 255, 163, 0.4), 0 0 20px rgba(0, 255, 163, 0.15); }
+.progress-bar__fill--yellow { background: linear-gradient(90deg, #e6a800, var(--accent-gold)); box-shadow: 0 0 10px rgba(255, 204, 0, 0.4), 0 0 20px rgba(255, 204, 0, 0.15); }
+.progress-bar__fill--orange { background: linear-gradient(90deg, var(--accent-orange), #ff9500); box-shadow: 0 0 10px rgba(255, 122, 47, 0.4), 0 0 20px rgba(255, 122, 47, 0.15); }
 .progress-bar__fill--red {
   background: linear-gradient(90deg, var(--accent-red), var(--accent-neon-pink));
-  box-shadow: 0 0 12px rgba(255, 56, 96, 0.4);
+  box-shadow: 0 0 14px rgba(255, 45, 85, 0.5), 0 0 25px rgba(255, 45, 85, 0.2);
   animation: barPulse 2s ease-in-out infinite;
 }
 
@@ -299,13 +299,20 @@
 }
 
 .btn--primary {
-  background: linear-gradient(135deg, var(--accent-neon-blue), var(--accent-neon-purple));
+  background: linear-gradient(135deg, var(--accent-neon-blue), var(--accent-neon-purple), var(--accent-neon-pink));
+  background-size: 200% 200%;
+  animation: btnGradient 4s ease infinite;
   color: #fff; border: none;
-  box-shadow: 0 0 20px rgba(0, 240, 255, 0.2);
+  box-shadow: 0 0 20px rgba(0, 229, 255, 0.25), 0 0 40px rgba(200, 79, 255, 0.1);
+}
+
+@keyframes btnGradient {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
 }
 
 .btn--primary:hover {
-  box-shadow: 0 0 30px rgba(0, 240, 255, 0.35), 0 0 60px rgba(191, 90, 242, 0.15);
+  box-shadow: 0 0 30px rgba(0, 229, 255, 0.4), 0 0 60px rgba(200, 79, 255, 0.2);
   transform: translateY(-2px);
 }
 

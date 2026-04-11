@@ -45,7 +45,7 @@ COIN_IDS = {
     "ETH": "ethereum",
     "SOL": "solana",
     "LINK": "chainlink",
-    "BRETT": "brett",
+    "BRETT": "brett-based",
     "POPCAT": "popcat",
     "WIF": "dogwifcoin",
 }
