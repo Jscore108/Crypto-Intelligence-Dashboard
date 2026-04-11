@@ -91,8 +91,8 @@
         <div class="gauge-container" id="composite-gauge">
           <div class="skeleton" style="width:200px;height:120px;"></div>
         </div>
-        <div class="indicator-card" id="composite-breakdown" style="padding:14px;">
-          <div class="indicator-card__header" style="margin-bottom:8px;">
+        <div class="indicator-card" id="composite-breakdown" style="padding:12px;">
+          <div class="indicator-card__header" style="margin-bottom:6px;">
             <span class="indicator-card__title">Score Breakdown</span>
             <span class="status-badge status-badge--cyan">WEIGHTS</span>
           </div>
@@ -102,31 +102,22 @@
         </div>
       </div>
 
-      <!-- Quick Stats Grid -->
-      <div class="grid-3" id="quick-stats">
-        <div class="indicator-card">
-          <div class="indicator-card__header">
-            <span class="indicator-card__title">BTC Dominance</span>
-            <span class="status-badge status-badge--yellow" id="btcd-badge">--</span>
-          </div>
-          <div class="indicator-card__value" id="btcd-value">--</div>
-          <div class="indicator-card__label text-muted" id="btcd-label">Loading...</div>
+      <!-- Quick Stats — compact horizontal bars -->
+      <div style="display:flex;flex-direction:column;gap:8px;justify-content:center;">
+        <div class="stat-bar">
+          <span class="stat-bar__label">BTC Dominance</span>
+          <span class="stat-bar__value" id="btcd-value">--</span>
+          <span class="status-badge status-badge--yellow" id="btcd-badge" style="margin-left:auto;">--</span>
         </div>
-        <div class="indicator-card">
-          <div class="indicator-card__header">
-            <span class="indicator-card__title">ETH/BTC Ratio</span>
-            <span class="status-badge status-badge--yellow" id="ethbtc-badge">--</span>
-          </div>
-          <div class="indicator-card__value" id="ethbtc-value">--</div>
-          <div class="indicator-card__label text-muted" id="ethbtc-label">Loading...</div>
+        <div class="stat-bar">
+          <span class="stat-bar__label">ETH/BTC Ratio</span>
+          <span class="stat-bar__value" id="ethbtc-value">--</span>
+          <span class="status-badge status-badge--yellow" id="ethbtc-badge" style="margin-left:auto;">--</span>
         </div>
-        <div class="indicator-card">
-          <div class="indicator-card__header">
-            <span class="indicator-card__title">Alt Season Index</span>
-            <span class="status-badge status-badge--yellow" id="altseason-badge">--</span>
-          </div>
-          <div class="indicator-card__value" id="altseason-value">--</div>
-          <div class="indicator-card__label text-muted" id="altseason-label">Loading...</div>
+        <div class="stat-bar">
+          <span class="stat-bar__label">Alt Season Index</span>
+          <span class="stat-bar__value" id="altseason-value">--</span>
+          <span class="status-badge status-badge--yellow" id="altseason-badge" style="margin-left:auto;">--</span>
         </div>
       </div>
     </div>

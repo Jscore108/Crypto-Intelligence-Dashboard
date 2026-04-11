@@ -7,8 +7,8 @@
 
 :root {
   --bg-primary: #03040a;
-  --bg-panel: rgba(8, 12, 24, 0.7);
-  --bg-card: rgba(12, 16, 32, 0.6);
+  --bg-panel: rgba(8, 12, 24, 0.5);
+  --bg-card: rgba(10, 14, 28, 0.45);
   --bg-card-hover: rgba(20, 28, 50, 0.7);
   --bg-glass: rgba(15, 20, 40, 0.4);
   --accent-neon-blue: #00e5ff;
@@ -219,8 +219,45 @@ h1, h2, h3 { font-family: 'Orbitron', sans-serif; font-weight: 700; letter-spaci
 .dashboard-top-grid {
   display: grid;
   grid-template-columns: 280px 1fr;
-  gap: 20px;
+  gap: 16px;
   margin-bottom: 24px;
+}
+
+/* --- Compact Stat Bar --- */
+.stat-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  background: rgba(12, 16, 32, 0.4);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 10px;
+  transition: all var(--transition);
+}
+
+.stat-bar:hover {
+  background: rgba(20, 28, 50, 0.5);
+  border-color: rgba(0, 229, 255, 0.1);
+}
+
+.stat-bar__label {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.58rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  width: 100px;
+  flex-shrink: 0;
+}
+
+.stat-bar__value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-shadow: 0 0 10px rgba(238, 240, 255, 0.15);
 }
 
 .movers-grid {

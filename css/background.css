@@ -21,11 +21,11 @@ body::before {
   pointer-events: none;
   background:
     linear-gradient(180deg,
-      rgba(3, 4, 10, 0.7) 0%,
-      rgba(3, 4, 10, 0.5) 25%,
-      rgba(3, 4, 10, 0.55) 50%,
-      rgba(3, 4, 10, 0.65) 75%,
-      rgba(3, 4, 10, 0.8) 100%
+      rgba(3, 4, 10, 0.6) 0%,
+      rgba(3, 4, 10, 0.4) 20%,
+      rgba(3, 4, 10, 0.45) 50%,
+      rgba(3, 4, 10, 0.55) 75%,
+      rgba(3, 4, 10, 0.7) 100%
     );
 }
 
