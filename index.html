@@ -178,35 +178,27 @@
         <div class="indicator-card__label" id="puell-label">Loading...</div>
       </div>
 
-      <!-- BTC Key Level -->
-      <div class="indicator-card" id="card-btc-level">
+      <!-- Indicator Sell Thresholds -->
+      <div class="indicator-card" id="card-indicator-levels">
         <div class="indicator-card__header">
-          <span class="indicator-card__title">BTC Key Level</span>
-          <span class="status-badge" id="btc-level-badge">--</span>
+          <span class="indicator-card__title">Indicator Sell Levels</span>
+          <span class="status-badge status-badge--cyan">THRESHOLDS</span>
         </div>
-        <div class="indicator-card__value" id="btc-level-value">--</div>
-        <div class="indicator-card__label" id="btc-level-label">Loading...</div>
+        <div id="indicator-levels-content" style="font-family:'JetBrains Mono',monospace;font-size:0.75rem;">
+          <div style="color:var(--text-muted);">Loading...</div>
+        </div>
       </div>
 
-      <!-- ETH Key Level -->
-      <div class="indicator-card" id="card-eth-level">
-        <div class="indicator-card__header">
-          <span class="indicator-card__title">ETH Key Level</span>
-          <span class="status-badge" id="eth-level-badge">--</span>
-        </div>
-        <div class="indicator-card__value" id="eth-level-value">--</div>
-        <div class="indicator-card__label" id="eth-level-label">Loading...</div>
-      </div>
+    </div>
 
-      <!-- Market Cap -->
-      <div class="indicator-card" id="card-mcap">
-        <div class="indicator-card__header">
-          <span class="indicator-card__title">Total Market Cap</span>
-        </div>
-        <div class="indicator-card__value" id="mcap-value">--</div>
-        <div class="indicator-card__label text-muted" id="mcap-label">Loading...</div>
-      </div>
+    <!-- Sell Targets: Current vs Target -->
+    <div class="section-header" style="margin-top:28px;">
+      <h2>Sell Targets</h2>
+      <span class="section-header__badge">Current vs Target</span>
+    </div>
 
+    <div id="sell-targets-grid">
+      <div style="color:var(--text-muted);font-size:0.85rem;padding:20px;">Loading sell targets...</div>
     </div>
 
     <!-- Top Gainers / Losers -->
@@ -255,16 +247,25 @@
     // ============================================================
 
     const SELL_ZONES = {
-      BTC: [
-        { label: "ATH Target", price: 126000 },
-        { label: "1.618 Fib", price: 167000 },
-      ],
-      ETH: [
-        { label: "Resistance 1", price: 4300 },
-        { label: "Resistance 2", price: 5000 },
-        { label: "1.618 Fib", price: 6900 },
-      ],
+      BTC: [ { label: "ATH Target", price: 126000 }, { label: "1.618 Fib", price: 167000 } ],
+      ETH: [ { label: "Resistance 1", price: 4300 }, { label: "Resistance 2", price: 5000 }, { label: "1.618 Fib", price: 6900 } ],
+      SOL: [ { label: "Target", price: 418 } ],
+      LINK: [ { label: "0.786 Fib", price: 24 }, { label: "52W High", price: 28 }, { label: "~1.618 Fib", price: 38 }, { label: "2.618 Fib", price: 62 } ],
+      BRETT: [ { label: "T1", price: 0.075 }, { label: "T2", price: 0.09 }, { label: "T3", price: 0.12 }, { label: "T4", price: 0.18 } ],
+      POPCAT: [ { label: "T1", price: 0.35 }, { label: "T2", price: 0.55 }, { label: "T3", price: 0.85 }, { label: "T4", price: 1.258 } ],
+      WIF: [ { label: "T1", price: 0.90 }, { label: "T2", price: 1.50 }, { label: "T3", price: 2.08 }, { label: "T4", price: 3.20 } ],
     };
+
+    const COIN_IDS_MAP = { BTC: 'bitcoin', ETH: 'ethereum', SOL: 'solana', LINK: 'chainlink', BRETT: 'brett', POPCAT: 'popcat', WIF: 'dogwifcoin' };
+
+    // Indicator sell thresholds
+    const INDICATOR_SELL_LEVELS = [
+      { name: 'Fear & Greed', sellAbove: 75, label: '> 75 = Sell Zone' },
+      { name: 'MVRV Z-Score', sellAbove: 7, label: '> 7 = Sell Zone' },
+      { name: 'Puell Multiple', sellAbove: 2, label: '> 2 = Sell Zone' },
+      { name: 'RSI (14)', sellAbove: 70, label: '> 70 = Overbought' },
+      { name: 'Pi Cycle', sellAbove: 1.0, label: 'Ratio >= 1.0 = Top' },
+    ];
 
     // --- Helpers ---
     function formatPrice(val) {
@@ -389,24 +390,9 @@
         setBadge('altseason-badge', zone.label, zone.color);
       }
 
-      // === BTC / ETH Key Levels ===
-      if (data.prices?.bitcoin) {
-        const btcPrice = data.prices.bitcoin.usd;
-        const nearestBtc = findNearestSellZone(btcPrice, SELL_ZONES.BTC);
-        if (nearestBtc) {
-          const pctAway = ((nearestBtc.price - btcPrice) / btcPrice * 100).toFixed(1);
-          setCard('btc-level', formatPrice(btcPrice), `${nearestBtc.label}: ${formatPrice(nearestBtc.price)} (${pctAway}% away)`, pctAway < 10 ? 'red' : 'yellow');
-          setBadge('btc-level-badge', pctAway < 5 ? 'NEAR' : pctAway < 20 ? 'WATCH' : 'FAR', pctAway < 5 ? 'red' : pctAway < 20 ? 'yellow' : 'green');
-        }
-        if (data.prices.ethereum) {
-          const ethPrice = data.prices.ethereum.usd;
-          const nearestEth = findNearestSellZone(ethPrice, SELL_ZONES.ETH);
-          if (nearestEth) {
-            const pctAway = ((nearestEth.price - ethPrice) / ethPrice * 100).toFixed(1);
-            setCard('eth-level', formatPrice(ethPrice), `${nearestEth.label}: ${formatPrice(nearestEth.price)} (${pctAway}% away)`, pctAway < 10 ? 'red' : 'yellow');
-            setBadge('eth-level-badge', pctAway < 5 ? 'NEAR' : pctAway < 20 ? 'WATCH' : 'FAR', pctAway < 5 ? 'red' : pctAway < 20 ? 'yellow' : 'green');
-          }
-        }
+      // === Sell Targets: Current vs Target for all coins ===
+      if (data.prices) {
+        renderSellTargets(data.prices);
       }
 
       // === Gainers / Losers ===
@@ -469,6 +455,106 @@
       document.getElementById('ticker-composite').textContent = compositeScore + '/100';
       const compZone = Composite.getZone(compositeScore);
       document.getElementById('ticker-composite').style.color = compZone.color;
+
+      // Update indicator sell levels card
+      renderIndicatorLevels({
+        'Fear & Greed': fngVal ? Number(fngVal) : null,
+        'MVRV Z-Score': estMvrv !== null ? estMvrv : null,
+        'Puell Multiple': puellEst,
+        'RSI (14)': rsiVal,
+        'Pi Cycle': piCycle?.ratio || null,
+      });
+    }
+
+    // --- Render Sell Targets Grid ---
+    function renderSellTargets(prices) {
+      const container = document.getElementById('sell-targets-grid');
+      if (!container) return;
+
+      let html = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px;">';
+
+      for (const [coin, zones] of Object.entries(SELL_ZONES)) {
+        const coinId = COIN_IDS_MAP[coin];
+        const priceData = prices[coinId];
+        const current = priceData?.usd;
+        if (!current) continue;
+
+        const change = priceData.usd_24h_change;
+        const changeStr = change !== undefined ? `<span class="top-bar__change top-bar__change--${change >= 0 ? 'up' : 'down'}">${change >= 0 ? '+' : ''}${change.toFixed(1)}%</span>` : '';
+
+        html += `<div class="indicator-card" style="padding:16px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="font-family:'Orbitron',sans-serif;font-size:0.85rem;font-weight:800;color:var(--accent-neon-blue);text-shadow:0 0 8px rgba(0,240,255,0.3);">${coin}</span>
+              <span class="font-mono" style="font-size:0.85rem;color:var(--text-primary);">${formatPrice(current)}</span>
+              ${changeStr}
+            </div>
+          </div>`;
+
+        zones.forEach(zone => {
+          const pctAway = ((zone.price - current) / current * 100);
+          const reached = current >= zone.price;
+          const inZone = Math.abs(pctAway) <= 2;
+          const progress = Math.min(100, (current / zone.price) * 100);
+          const multiple = (zone.price / current).toFixed(2);
+
+          let barColor, textColor;
+          if (reached) { barColor = 'var(--accent-neon-green)'; textColor = 'var(--accent-neon-green)'; }
+          else if (pctAway <= 5) { barColor = 'var(--accent-red)'; textColor = 'var(--accent-red)'; }
+          else if (pctAway <= 15) { barColor = 'var(--accent-orange)'; textColor = 'var(--accent-orange)'; }
+          else if (pctAway <= 30) { barColor = 'var(--accent-gold)'; textColor = 'var(--accent-gold)'; }
+          else { barColor = 'var(--accent-neon-blue)'; textColor = 'var(--text-muted)'; }
+
+          html += `
+            <div style="margin-bottom:10px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <span style="font-size:0.72rem;color:var(--text-muted);font-family:'Rajdhani',sans-serif;font-weight:600;">${zone.label}</span>
+                  ${inZone ? '<span class="in-zone-badge" style="font-size:0.5rem;padding:2px 6px;">IN ZONE</span>' : ''}
+                  ${reached ? '<span style="font-family:Orbitron,sans-serif;font-size:0.5rem;color:var(--accent-neon-green);background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.2);padding:2px 6px;border-radius:4px;">REACHED</span>' : ''}
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;font-family:JetBrains Mono,monospace;font-size:0.72rem;">
+                  <span style="color:var(--text-primary);">${formatPrice(zone.price)}</span>
+                  <span style="color:${textColor};">${reached ? 'DONE' : pctAway.toFixed(1) + '% away'}</span>
+                  <span style="color:var(--accent-neon-purple);font-size:0.68rem;">${multiple}x</span>
+                </div>
+              </div>
+              <div class="progress-bar" style="height:4px;">
+                <div class="progress-bar__fill" style="width:${progress}%;background:${barColor};box-shadow:0 0 8px ${barColor};border-radius:2px;"></div>
+              </div>
+            </div>`;
+        });
+
+        html += '</div>';
+      }
+
+      html += '</div>';
+      container.innerHTML = html;
+    }
+
+    // --- Render Indicator Sell Levels ---
+    function renderIndicatorLevels(indicatorValues) {
+      const container = document.getElementById('indicator-levels-content');
+      if (!container) return;
+
+      const rows = INDICATOR_SELL_LEVELS.map(ind => {
+        const current = indicatorValues[ind.name];
+        const hasData = current !== null && current !== undefined;
+        const atSell = hasData && current >= ind.sellAbove;
+        const pctToSell = hasData ? ((ind.sellAbove - current) / ind.sellAbove * 100) : null;
+        const color = atSell ? 'var(--accent-red)' : (pctToSell !== null && pctToSell < 20) ? 'var(--accent-orange)' : 'var(--text-muted)';
+
+        return `<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid rgba(100,120,200,0.06);">
+          <span style="color:var(--text-secondary);font-size:0.72rem;">${ind.name}</span>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="color:${hasData ? 'var(--text-primary)' : 'var(--text-muted)'};font-weight:600;">${hasData ? (typeof current === 'number' ? current.toFixed(1) : current) : '--'}</span>
+            <span style="color:var(--text-muted);font-size:0.65rem;">sell ${ind.label}</span>
+            ${atSell ? '<span style="color:var(--accent-red);font-size:0.6rem;font-weight:700;">SELL</span>' : ''}
+          </div>
+        </div>`;
+      }).join('');
+
+      container.innerHTML = rows;
     }
 
     function renderMoversTable(tbodyId, coins) {
