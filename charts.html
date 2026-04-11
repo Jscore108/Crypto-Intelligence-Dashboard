@@ -145,10 +145,8 @@
       currentDays = days;
       // Prefetch all unique data in parallel (only 4 calls)
       // Then charts render instantly from cache
-      // Prefetch — also get max BTC data for rainbow
       await Promise.all([
         API.getHistoricalPrices('bitcoin', days).catch(() => null),
-        API.getHistoricalPrices('bitcoin', 'max').catch(() => null),
         API.getHistoricalPrices('ethereum', days).catch(() => null),
         API.getHistoricalPrices('solana', days).catch(() => null),
         API.getFearGreedHistory().catch(() => null),

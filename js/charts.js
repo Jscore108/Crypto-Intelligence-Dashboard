@@ -374,8 +374,13 @@ const Charts = (() => {
     });
 
     try {
-      const data = await API.getHistoricalPrices('bitcoin', 'max');
-      if (!data?.prices || data.prices.length < 100) throw new Error('No data');
+      // Try max first, fall back to whatever days are cached
+      let data = null;
+      try { data = await API.getHistoricalPrices('bitcoin', 'max'); } catch (_) {}
+      if (!data?.prices || data.prices.length < 50) {
+        try { data = await API.getHistoricalPrices('bitcoin', 365); } catch (_) {}
+      }
+      if (!data?.prices || data.prices.length < 50) throw new Error('No data');
 
       // Calculate log regression
       const genesisDate = new Date('2009-01-03').getTime();
@@ -399,46 +404,48 @@ const Charts = (() => {
         if (day !== lastDay) { sampled.push(p); lastDay = day; }
       });
 
-      // Rainbow band offsets (top to bottom)
+      // Rainbow band colors and offsets
       const bands = [
-        { offset: 2.2,  topColor: 'rgba(200, 0, 0, 0.18)',    bottomColor: 'rgba(200, 0, 0, 0.02)' },
-        { offset: 1.7,  topColor: 'rgba(255, 80, 0, 0.16)',   bottomColor: 'rgba(255, 80, 0, 0.02)' },
-        { offset: 1.2,  topColor: 'rgba(255, 160, 0, 0.14)',  bottomColor: 'rgba(255, 160, 0, 0.02)' },
-        { offset: 0.7,  topColor: 'rgba(255, 230, 0, 0.12)',  bottomColor: 'rgba(255, 230, 0, 0.02)' },
-        { offset: 0.2,  topColor: 'rgba(100, 255, 0, 0.12)',  bottomColor: 'rgba(100, 255, 0, 0.02)' },
-        { offset: -0.3, topColor: 'rgba(0, 200, 100, 0.12)',  bottomColor: 'rgba(0, 200, 100, 0.02)' },
-        { offset: -0.8, topColor: 'rgba(0, 140, 255, 0.14)',  bottomColor: 'rgba(0, 140, 255, 0.02)' },
-        { offset: -1.3, topColor: 'rgba(60, 0, 255, 0.16)',   bottomColor: 'rgba(60, 0, 255, 0.02)' },
+        { offset: 2.2,  color: '#cc0000' },
+        { offset: 1.7,  color: '#ff5500' },
+        { offset: 1.2,  color: '#ffa000' },
+        { offset: 0.7,  color: '#ffe600' },
+        { offset: 0.2,  color: '#66ff00' },
+        { offset: -0.3, color: '#00c864' },
+        { offset: -0.8, color: '#008cff' },
+        { offset: -1.3, color: '#4400ff' },
       ];
 
-      // Draw bands as area series (top to bottom so they layer correctly)
-      for (const band of bands) {
-        const bandData = sampled.map(p => {
-          const val = Math.pow(10, slope * p.logDays + intercept + band.offset);
-          return { time: Math.floor(p.ts / 1000), value: val };
-        });
-
-        const series = chart.addAreaSeries({
-          lineColor: band.topColor.replace(/[\d.]+\)$/, '0.6)'),
-          topColor: band.topColor,
-          bottomColor: band.bottomColor,
-          lineWidth: 1,
-          priceLineVisible: false,
-          lastValueVisible: false,
-          crosshairMarkerVisible: false,
-          priceFormat: { type: 'price', precision: 0, minMove: 1 },
-        });
-        series.setData(bandData);
-      }
-
-      // Price line on top
+      // Build price data from sampled points
       const priceData = sampled.map(p => ({
         time: Math.floor(p.ts / 1000),
         value: Math.pow(10, p.logPrice),
       }));
 
+      // Draw each band as a line series
+      for (const band of bands) {
+        const bandData = sampled.map(p => ({
+          time: Math.floor(p.ts / 1000),
+          value: Math.pow(10, slope * p.logDays + intercept + band.offset),
+        }));
+
+        try {
+          const series = chart.addLineSeries({
+            color: band.color,
+            lineWidth: 1,
+            lineStyle: 0,
+            priceLineVisible: false,
+            lastValueVisible: false,
+            crosshairMarkerVisible: false,
+            priceFormat: { type: 'price', precision: 0, minMove: 1 },
+          });
+          series.setData(bandData);
+        } catch (e) { console.warn('[Rainbow] band error:', e); }
+      }
+
+      // Price line on top in white
       const priceSeries = chart.addLineSeries({
-        color: CHART_COLORS.gold,
+        color: '#ffffff',
         lineWidth: 2,
         priceFormat: { type: 'price', precision: 0, minMove: 1 },
         lastValueVisible: true,
