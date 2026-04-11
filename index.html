@@ -310,177 +310,148 @@
       return nearest;
     }
 
-    // --- Main Update ---
-    async function updateDashboard() {
-      try {
-        const data = await API.fetchAllDashboardData();
-        if (!data) return;
-
-        // === Top Bar Ticker ===
-        if (data.prices) {
-          const btc = data.prices.bitcoin;
-          const eth = data.prices.ethereum;
-
-          if (btc) {
-            document.getElementById('ticker-btc-price').textContent = formatPrice(btc.usd);
-            const btcChangeEl = document.getElementById('ticker-btc-change');
-            btcChangeEl.textContent = formatPct(btc.usd_24h_change);
-            btcChangeEl.className = `top-bar__change top-bar__change--${btc.usd_24h_change >= 0 ? 'up' : 'down'}`;
-          }
-
-          if (eth) {
-            document.getElementById('ticker-eth-price').textContent = formatPrice(eth.usd);
-            const ethChangeEl = document.getElementById('ticker-eth-change');
-            ethChangeEl.textContent = formatPct(eth.usd_24h_change);
-            ethChangeEl.className = `top-bar__change top-bar__change--${eth.usd_24h_change >= 0 ? 'up' : 'down'}`;
-          }
+    // --- Render UI from data (no fetching) ---
+    function renderDashboard(data) {
+      // === Top Bar Ticker ===
+      if (data.prices) {
+        const btc = data.prices.bitcoin;
+        const eth = data.prices.ethereum;
+        if (btc) {
+          document.getElementById('ticker-btc-price').textContent = formatPrice(btc.usd);
+          const btcChangeEl = document.getElementById('ticker-btc-change');
+          btcChangeEl.textContent = formatPct(btc.usd_24h_change);
+          btcChangeEl.className = `top-bar__change top-bar__change--${btc.usd_24h_change >= 0 ? 'up' : 'down'}`;
         }
-
-        // === Fear & Greed ===
-        if (data.fearGreed && data.fearGreed[0]) {
-          const fng = data.fearGreed[0];
-          const zone = Indicators.fearGreedZone(fng.value);
-          setCard('fng', fng.value, zone.label, zone.color);
-          setBadge('fng-badge', zone.label, zone.color);
-          setCardGlow('card-fng', zone.color);
-          document.getElementById('ticker-fng').textContent = fng.value;
-          document.getElementById('ticker-fng').style.color =
-            zone.color === 'red' ? 'var(--accent-red)' :
-            zone.color === 'green' ? 'var(--accent-green)' : 'var(--accent-gold)';
+        if (eth) {
+          document.getElementById('ticker-eth-price').textContent = formatPrice(eth.usd);
+          const ethChangeEl = document.getElementById('ticker-eth-change');
+          ethChangeEl.textContent = formatPct(eth.usd_24h_change);
+          ethChangeEl.className = `top-bar__change top-bar__change--${eth.usd_24h_change >= 0 ? 'up' : 'down'}`;
         }
-
-        // === BTC Dominance ===
-        if (data.global) {
-          const btcD = data.global.market_cap_percentage?.btc;
-          if (btcD !== undefined) {
-            const zone = Indicators.btcDominanceZone(btcD);
-            setCard('btcd', btcD.toFixed(1) + '%', zone.label, zone.color);
-            setBadge('btcd-badge', zone.label, zone.color);
-          }
-
-          // Total market cap
-          const totalMcap = data.global.total_market_cap?.usd;
-          if (totalMcap) {
-            document.getElementById('mcap-value').textContent = formatLargeNumber(totalMcap);
-            document.getElementById('mcap-label').textContent = 'Total crypto market';
-          }
-        }
-
-        // === ETH/BTC Ratio ===
-        if (data.ethBtcRatio) {
-          const zone = Indicators.ethBtcZone(data.ethBtcRatio);
-          setCard('ethbtc', data.ethBtcRatio.toFixed(5), zone.label, zone.color);
-          setBadge('ethbtc-badge', zone.label, zone.color);
-        }
-
-        // === Alt Season Index ===
-        if (data.altSeason) {
-          const zone = Indicators.altSeasonZone(data.altSeason.value);
-          setCard('altseason', data.altSeason.value + '/100', zone.label, zone.color);
-          setBadge('altseason-badge', zone.label, zone.color);
-        }
-
-        // === BTC Key Level ===
-        if (data.prices?.bitcoin) {
-          const btcPrice = data.prices.bitcoin.usd;
-          const nearestBtc = findNearestSellZone(btcPrice, SELL_ZONES.BTC);
-          if (nearestBtc) {
-            const pctAway = ((nearestBtc.price - btcPrice) / btcPrice * 100).toFixed(1);
-            setCard('btc-level', formatPrice(btcPrice), `${nearestBtc.label}: ${formatPrice(nearestBtc.price)} (${pctAway}% away)`, pctAway < 10 ? 'red' : 'yellow');
-            setBadge('btc-level-badge', pctAway < 5 ? 'NEAR' : pctAway < 20 ? 'WATCH' : 'FAR', pctAway < 5 ? 'red' : pctAway < 20 ? 'yellow' : 'green');
-          }
-
-          // ETH Key Level
-          if (data.prices.ethereum) {
-            const ethPrice = data.prices.ethereum.usd;
-            const nearestEth = findNearestSellZone(ethPrice, SELL_ZONES.ETH);
-            if (nearestEth) {
-              const pctAway = ((nearestEth.price - ethPrice) / ethPrice * 100).toFixed(1);
-              setCard('eth-level', formatPrice(ethPrice), `${nearestEth.label}: ${formatPrice(nearestEth.price)} (${pctAway}% away)`, pctAway < 10 ? 'red' : 'yellow');
-              setBadge('eth-level-badge', pctAway < 5 ? 'NEAR' : pctAway < 20 ? 'WATCH' : 'FAR', pctAway < 5 ? 'red' : pctAway < 20 ? 'yellow' : 'green');
-            }
-          }
-        }
-
-        // === MVRV, Pi Cycle, RSI (from BTC history) ===
-        let mvrvNorm = 50, piCycleVal = 20, rsiVal = 50;
-        try {
-          const btcHistory = await API.getBTCHistory(730);
-          if (btcHistory && btcHistory.prices) {
-            const closingPrices = btcHistory.prices.map(p => p[1]);
-
-            // RSI
-            const rsi = Indicators.RSI(closingPrices, 14);
-            if (rsi !== null) {
-              rsiVal = rsi;
-              const rsiColor = rsi > 70 ? 'red' : rsi < 30 ? 'green' : 'yellow';
-              const rsiLabel = rsi > 70 ? 'Overbought' : rsi < 30 ? 'Oversold' : 'Neutral';
-              setCard('rsi', rsi.toFixed(1), rsiLabel, rsiColor);
-              setBadge('rsi-badge', rsiLabel, rsiColor);
-              setCardGlow('card-rsi', rsiColor);
-            }
-
-            // Pi Cycle
-            const piCycle = Indicators.piCycleSignal(closingPrices);
-            piCycleVal = piCycle.value;
-            const piColor = piCycle.value >= 80 ? 'red' : piCycle.value >= 50 ? 'yellow' : 'green';
-            setCard('picycle', piCycle.ratio ? piCycle.ratio.toFixed(4) : '--', piCycle.signal, piColor);
-            setBadge('picycle-badge', piCycle.signal, piColor);
-            setCardGlow('card-picycle', piColor);
-
-            // Estimated MVRV
-            const estMvrv = Indicators.estimateMVRV(closingPrices);
-            if (estMvrv !== null) {
-              const mvrvZone = Indicators.mvrvZone(estMvrv);
-              mvrvNorm = mvrvZone.normalized;
-              setCard('mvrv', estMvrv.toFixed(2), mvrvZone.label + ' (est.)', mvrvZone.color);
-              setBadge('mvrv-badge', mvrvZone.label, mvrvZone.color);
-              setCardGlow('card-mvrv', mvrvZone.color);
-            }
-
-            // Puell (estimated from mining proxy)
-            const puellEst = closingPrices.length > 365
-              ? closingPrices[closingPrices.length - 1] / Indicators.SMA(closingPrices, 365)
-              : null;
-            if (puellEst !== null) {
-              const puellZone = Indicators.puellZone(puellEst);
-              setCard('puell', puellEst.toFixed(2), puellZone.label + ' (est.)', puellZone.color);
-              setBadge('puell-badge', puellZone.label, puellZone.color);
-              setCardGlow('card-puell', puellZone.color);
-            }
-          }
-        } catch (e) {
-          console.error('[Dashboard] Historical data error:', e);
-        }
-
-        // === Composite Score ===
-        const fngVal = data.fearGreed?.[0]?.value || 50;
-        const compositeScore = Composite.calculate(fngVal, mvrvNorm, piCycleVal, rsiVal);
-        Composite.renderGauge(document.getElementById('composite-gauge'), compositeScore);
-        document.getElementById('ticker-composite').textContent = compositeScore + '/100';
-        const compZone = Composite.getZone(compositeScore);
-        document.getElementById('ticker-composite').style.color = compZone.color;
-
-        // === Gainers / Losers ===
-        if (data.topCoins && data.topCoins.length > 0) {
-          const sorted = [...data.topCoins].sort((a, b) =>
-            (b.price_change_percentage_24h || 0) - (a.price_change_percentage_24h || 0)
-          );
-          const gainers = sorted.slice(0, 5);
-          const losers = sorted.slice(-5).reverse();
-
-          renderMoversTable('gainers-body', gainers);
-          renderMoversTable('losers-body', losers);
-        }
-
-        // === Timestamp ===
-        const now = new Date();
-        document.getElementById('ticker-updated').textContent =
-          'Updated: ' + now.toLocaleTimeString();
-
-      } catch (err) {
-        console.error('[Dashboard] Update failed:', err);
       }
+
+      // === Fear & Greed ===
+      if (data.fearGreed && data.fearGreed[0]) {
+        const fng = data.fearGreed[0];
+        const zone = Indicators.fearGreedZone(fng.value);
+        setCard('fng', fng.value, zone.label, zone.color);
+        setBadge('fng-badge', zone.label, zone.color);
+        setCardGlow('card-fng', zone.color);
+        document.getElementById('ticker-fng').textContent = fng.value;
+        document.getElementById('ticker-fng').style.color =
+          zone.color === 'red' ? 'var(--accent-red)' :
+          zone.color === 'green' ? 'var(--accent-green)' : 'var(--accent-gold)';
+      }
+
+      // === BTC Dominance ===
+      if (data.global) {
+        const btcD = data.global.market_cap_percentage?.btc;
+        if (btcD !== undefined) {
+          const zone = Indicators.btcDominanceZone(btcD);
+          setCard('btcd', btcD.toFixed(1) + '%', zone.label, zone.color);
+          setBadge('btcd-badge', zone.label, zone.color);
+        }
+        const totalMcap = data.global.total_market_cap?.usd;
+        if (totalMcap) {
+          document.getElementById('mcap-value').textContent = formatLargeNumber(totalMcap);
+          document.getElementById('mcap-label').textContent = 'Total crypto market';
+        }
+      }
+
+      // === ETH/BTC Ratio ===
+      if (data.ethBtcRatio) {
+        const zone = Indicators.ethBtcZone(data.ethBtcRatio);
+        setCard('ethbtc', data.ethBtcRatio.toFixed(5), zone.label, zone.color);
+        setBadge('ethbtc-badge', zone.label, zone.color);
+      }
+
+      // === Alt Season Index ===
+      if (data.altSeason) {
+        const zone = Indicators.altSeasonZone(data.altSeason.value);
+        setCard('altseason', data.altSeason.value + '/100', zone.label, zone.color);
+        setBadge('altseason-badge', zone.label, zone.color);
+      }
+
+      // === BTC / ETH Key Levels ===
+      if (data.prices?.bitcoin) {
+        const btcPrice = data.prices.bitcoin.usd;
+        const nearestBtc = findNearestSellZone(btcPrice, SELL_ZONES.BTC);
+        if (nearestBtc) {
+          const pctAway = ((nearestBtc.price - btcPrice) / btcPrice * 100).toFixed(1);
+          setCard('btc-level', formatPrice(btcPrice), `${nearestBtc.label}: ${formatPrice(nearestBtc.price)} (${pctAway}% away)`, pctAway < 10 ? 'red' : 'yellow');
+          setBadge('btc-level-badge', pctAway < 5 ? 'NEAR' : pctAway < 20 ? 'WATCH' : 'FAR', pctAway < 5 ? 'red' : pctAway < 20 ? 'yellow' : 'green');
+        }
+        if (data.prices.ethereum) {
+          const ethPrice = data.prices.ethereum.usd;
+          const nearestEth = findNearestSellZone(ethPrice, SELL_ZONES.ETH);
+          if (nearestEth) {
+            const pctAway = ((nearestEth.price - ethPrice) / ethPrice * 100).toFixed(1);
+            setCard('eth-level', formatPrice(ethPrice), `${nearestEth.label}: ${formatPrice(nearestEth.price)} (${pctAway}% away)`, pctAway < 10 ? 'red' : 'yellow');
+            setBadge('eth-level-badge', pctAway < 5 ? 'NEAR' : pctAway < 20 ? 'WATCH' : 'FAR', pctAway < 5 ? 'red' : pctAway < 20 ? 'yellow' : 'green');
+          }
+        }
+      }
+
+      // === Gainers / Losers ===
+      if (data.topCoins && data.topCoins.length > 0) {
+        const sorted = [...data.topCoins].sort((a, b) =>
+          (b.price_change_percentage_24h || 0) - (a.price_change_percentage_24h || 0)
+        );
+        renderMoversTable('gainers-body', sorted.slice(0, 5));
+        renderMoversTable('losers-body', sorted.slice(-5).reverse());
+      }
+
+      // === Timestamp ===
+      document.getElementById('ticker-updated').textContent =
+        'Updated: ' + new Date().toLocaleTimeString();
+    }
+
+    // --- Render indicators from BTC history (heavy, runs in background) ---
+    function renderIndicators(closingPrices, fngVal) {
+      let mvrvNorm = 50, piCycleVal = 20, rsiVal = 50;
+
+      const rsi = Indicators.RSI(closingPrices, 14);
+      if (rsi !== null) {
+        rsiVal = rsi;
+        const rsiColor = rsi > 70 ? 'red' : rsi < 30 ? 'green' : 'yellow';
+        const rsiLabel = rsi > 70 ? 'Overbought' : rsi < 30 ? 'Oversold' : 'Neutral';
+        setCard('rsi', rsi.toFixed(1), rsiLabel, rsiColor);
+        setBadge('rsi-badge', rsiLabel, rsiColor);
+        setCardGlow('card-rsi', rsiColor);
+      }
+
+      const piCycle = Indicators.piCycleSignal(closingPrices);
+      piCycleVal = piCycle.value;
+      const piColor = piCycle.value >= 80 ? 'red' : piCycle.value >= 50 ? 'yellow' : 'green';
+      setCard('picycle', piCycle.ratio ? piCycle.ratio.toFixed(4) : '--', piCycle.signal, piColor);
+      setBadge('picycle-badge', piCycle.signal, piColor);
+      setCardGlow('card-picycle', piColor);
+
+      const estMvrv = Indicators.estimateMVRV(closingPrices);
+      if (estMvrv !== null) {
+        const mvrvZone = Indicators.mvrvZone(estMvrv);
+        mvrvNorm = mvrvZone.normalized;
+        setCard('mvrv', estMvrv.toFixed(2), mvrvZone.label + ' (est.)', mvrvZone.color);
+        setBadge('mvrv-badge', mvrvZone.label, mvrvZone.color);
+        setCardGlow('card-mvrv', mvrvZone.color);
+      }
+
+      const puellEst = closingPrices.length > 365
+        ? closingPrices[closingPrices.length - 1] / Indicators.SMA(closingPrices, 365)
+        : null;
+      if (puellEst !== null) {
+        const puellZone = Indicators.puellZone(puellEst);
+        setCard('puell', puellEst.toFixed(2), puellZone.label + ' (est.)', puellZone.color);
+        setBadge('puell-badge', puellZone.label, puellZone.color);
+        setCardGlow('card-puell', puellZone.color);
+      }
+
+      // Composite Score
+      const compositeScore = Composite.calculate(fngVal, mvrvNorm, piCycleVal, rsiVal);
+      Composite.renderGauge(document.getElementById('composite-gauge'), compositeScore);
+      document.getElementById('ticker-composite').textContent = compositeScore + '/100';
+      const compZone = Composite.getZone(compositeScore);
+      document.getElementById('ticker-composite').style.color = compZone.color;
     }
 
     function renderMoversTable(tbodyId, coins) {
@@ -501,10 +472,29 @@
       }).join('');
     }
 
+    // --- Main Update (progressive: fast data first, heavy indicators in background) ---
+    async function updateDashboard() {
+      try {
+        // Phase 1: Fetch fast data and render immediately
+        const data = await API.fetchAllDashboardData();
+        if (data) renderDashboard(data);
+
+        // Phase 2: Fetch BTC history in background for indicators
+        const fngVal = data?.fearGreed?.[0]?.value || 50;
+        API.getBTCHistory(365).then(btcHistory => {
+          if (btcHistory?.prices) {
+            renderIndicators(btcHistory.prices.map(p => p[1]), fngVal);
+          }
+        }).catch(e => console.error('[Dashboard] Indicator error:', e));
+
+      } catch (err) {
+        console.error('[Dashboard] Update failed:', err);
+      }
+    }
+
     // --- Init ---
     (async function init() {
       await updateDashboard();
-      // Auto-refresh every 60 seconds
       setInterval(updateDashboard, 60000);
     })();
   </script>
