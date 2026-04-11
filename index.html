@@ -102,22 +102,25 @@
         </div>
       </div>
 
-      <!-- Quick Stats — compact horizontal bars -->
-      <div style="display:flex;flex-direction:column;gap:8px;justify-content:center;">
+      <!-- Quick Stats — geometric floating cards -->
+      <div style="display:flex;flex-direction:column;gap:10px;justify-content:center;">
         <div class="stat-bar">
+          <svg class="stat-bar__geo" viewBox="0 0 24 24"><polygon points="12,2 22,8.5 22,15.5 12,22 2,15.5 2,8.5" fill="none" stroke="rgba(0,229,255,0.3)" stroke-width="1"/></svg>
           <span class="stat-bar__label">BTC Dominance</span>
           <span class="stat-bar__value" id="btcd-value">--</span>
-          <span class="status-badge status-badge--yellow" id="btcd-badge" style="margin-left:auto;">--</span>
+          <span class="status-badge status-badge--yellow" id="btcd-badge" style="margin-left:auto;position:relative;z-index:1;">--</span>
         </div>
         <div class="stat-bar">
+          <svg class="stat-bar__geo" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="2" fill="none" stroke="rgba(200,79,255,0.3)" stroke-width="1" transform="rotate(45 12 12)"/></svg>
           <span class="stat-bar__label">ETH/BTC Ratio</span>
           <span class="stat-bar__value" id="ethbtc-value">--</span>
-          <span class="status-badge status-badge--yellow" id="ethbtc-badge" style="margin-left:auto;">--</span>
+          <span class="status-badge status-badge--yellow" id="ethbtc-badge" style="margin-left:auto;position:relative;z-index:1;">--</span>
         </div>
         <div class="stat-bar">
+          <svg class="stat-bar__geo" viewBox="0 0 24 24"><polygon points="12,1 23,18 1,18" fill="none" stroke="rgba(0,255,163,0.3)" stroke-width="1"/><polygon points="12,23 1,6 23,6" fill="none" stroke="rgba(0,255,163,0.2)" stroke-width="1"/></svg>
           <span class="stat-bar__label">Alt Season Index</span>
           <span class="stat-bar__value" id="altseason-value">--</span>
-          <span class="status-badge status-badge--yellow" id="altseason-badge" style="margin-left:auto;">--</span>
+          <span class="status-badge status-badge--yellow" id="altseason-badge" style="margin-left:auto;position:relative;z-index:1;">--</span>
         </div>
       </div>
     </div>
