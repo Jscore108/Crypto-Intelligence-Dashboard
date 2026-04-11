@@ -386,7 +386,6 @@ const Charts = (() => {
           if (data?.prices?.length > 100) break;
         } catch (_) {}
       }
-      }
       if (!data?.prices || data.prices.length < 50) throw new Error('No data');
 
       // Calculate log regression
