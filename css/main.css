@@ -346,6 +346,18 @@ h1, h2, h3 { font-family: 'Orbitron', sans-serif; font-weight: 700; letter-spaci
   filter: drop-shadow(0 0 4px rgba(0, 229, 255, 0.2));
 }
 
+/* Target sell level */
+.stat-bar__target {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--accent-red);
+  opacity: 0.6;
+  position: relative;
+  z-index: 1;
+  text-shadow: 0 0 6px rgba(255, 45, 85, 0.2);
+}
+
 /* % toward sell goal */
 .stat-bar__pct {
   font-family: 'JetBrains Mono', monospace;
