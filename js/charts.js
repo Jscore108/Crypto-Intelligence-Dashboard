@@ -360,9 +360,7 @@ const Charts = (() => {
   });
 
   /**
-   * BTC Rainbow Chart — log regression bands with color coding
-   * Uses full BTC history to calculate log regression, then draws
-   * colored bands representing valuation zones
+   * BTC Rainbow Chart — log regression bands
    */
   async function renderRainbow(containerId) {
     const container = document.getElementById(containerId);
@@ -379,87 +377,73 @@ const Charts = (() => {
       const data = await API.getHistoricalPrices('bitcoin', 'max');
       if (!data?.prices || data.prices.length < 100) throw new Error('No data');
 
-      // BTC price line
-      const priceData = toLineData(data.prices);
-      const priceSeries = chart.addLineSeries({
-        color: '#ffffff',
-        lineWidth: 2,
-        priceFormat: { type: 'price', precision: 0, minMove: 1 },
-        lastValueVisible: true,
-        priceLineVisible: false,
-      });
-      priceSeries.setData(priceData);
-
-      // Calculate log regression from BTC genesis
-      // Using simplified model: log(price) = a * log(days_since_genesis) + b
+      // Calculate log regression
       const genesisDate = new Date('2009-01-03').getTime();
       const points = data.prices.map(([ts, price]) => {
         const days = Math.max(1, (ts - genesisDate) / 86400000);
-        return { days, logDays: Math.log10(days), logPrice: Math.log10(price), ts };
+        return { logDays: Math.log10(days), logPrice: Math.log10(price), ts };
       });
 
-      // Linear regression on log-log scale
       const n = points.length;
       let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
-      points.forEach(p => {
-        sumX += p.logDays;
-        sumY += p.logPrice;
-        sumXY += p.logDays * p.logPrice;
-        sumX2 += p.logDays * p.logDays;
-      });
+      points.forEach(p => { sumX += p.logDays; sumY += p.logPrice; sumXY += p.logDays * p.logPrice; sumX2 += p.logDays * p.logDays; });
       const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
       const intercept = (sumY - slope * sumX) / n;
 
-      // Rainbow bands: offsets from regression line
+      // Sample to ~daily (one point per day)
+      const dayMs = 86400000;
+      const sampled = [];
+      let lastDay = 0;
+      points.forEach(p => {
+        const day = Math.floor(p.ts / dayMs);
+        if (day !== lastDay) { sampled.push(p); lastDay = day; }
+      });
+
+      // Rainbow band offsets (top to bottom)
       const bands = [
-        { offset: 2.5,  color: 'rgba(255, 0, 0, 0.12)',     label: 'Maximum Bubble' },
-        { offset: 2.0,  color: 'rgba(255, 80, 0, 0.12)',    label: 'Sell' },
-        { offset: 1.5,  color: 'rgba(255, 160, 0, 0.12)',   label: 'FOMO' },
-        { offset: 1.0,  color: 'rgba(255, 220, 0, 0.12)',   label: 'Is this a bubble?' },
-        { offset: 0.5,  color: 'rgba(120, 255, 0, 0.12)',   label: 'HODL' },
-        { offset: 0.0,  color: 'rgba(0, 200, 100, 0.12)',   label: 'Still cheap' },
-        { offset: -0.5, color: 'rgba(0, 150, 255, 0.12)',   label: 'Accumulate' },
-        { offset: -1.0, color: 'rgba(0, 80, 255, 0.12)',    label: 'Buy' },
-        { offset: -1.5, color: 'rgba(80, 0, 255, 0.12)',    label: 'Fire sale' },
+        { offset: 2.2,  topColor: 'rgba(200, 0, 0, 0.18)',    bottomColor: 'rgba(200, 0, 0, 0.02)' },
+        { offset: 1.7,  topColor: 'rgba(255, 80, 0, 0.16)',   bottomColor: 'rgba(255, 80, 0, 0.02)' },
+        { offset: 1.2,  topColor: 'rgba(255, 160, 0, 0.14)',  bottomColor: 'rgba(255, 160, 0, 0.02)' },
+        { offset: 0.7,  topColor: 'rgba(255, 230, 0, 0.12)',  bottomColor: 'rgba(255, 230, 0, 0.02)' },
+        { offset: 0.2,  topColor: 'rgba(100, 255, 0, 0.12)',  bottomColor: 'rgba(100, 255, 0, 0.02)' },
+        { offset: -0.3, topColor: 'rgba(0, 200, 100, 0.12)',  bottomColor: 'rgba(0, 200, 100, 0.02)' },
+        { offset: -0.8, topColor: 'rgba(0, 140, 255, 0.14)',  bottomColor: 'rgba(0, 140, 255, 0.02)' },
+        { offset: -1.3, topColor: 'rgba(60, 0, 255, 0.16)',   bottomColor: 'rgba(60, 0, 255, 0.02)' },
       ];
 
-      // Draw each band as an area series
-      bands.forEach((band, idx) => {
-        const topOffset = band.offset;
-        const botOffset = bands[idx + 1]?.offset ?? (band.offset - 0.5);
-
-        const bandData = points.map(p => {
-          const regValue = Math.pow(10, slope * p.logDays + intercept);
-          const topVal = regValue * Math.pow(10, topOffset);
-          return { time: Math.floor(p.ts / 1000), value: topVal };
+      // Draw bands as area series (top to bottom so they layer correctly)
+      for (const band of bands) {
+        const bandData = sampled.map(p => {
+          const val = Math.pow(10, slope * p.logDays + intercept + band.offset);
+          return { time: Math.floor(p.ts / 1000), value: val };
         });
 
-        // Sample every Nth point to reduce data
-        const step = Math.max(1, Math.floor(bandData.length / 500));
-        const sampled = bandData.filter((_, i) => i % step === 0);
-
-        const series = chart.addLineSeries({
-          color: band.color.replace('0.12', '0.5'),
+        const series = chart.addAreaSeries({
+          lineColor: band.topColor.replace(/[\d.]+\)$/, '0.6)'),
+          topColor: band.topColor,
+          bottomColor: band.bottomColor,
           lineWidth: 1,
-          lineStyle: 2,
           priceLineVisible: false,
           lastValueVisible: false,
           crosshairMarkerVisible: false,
           priceFormat: { type: 'price', precision: 0, minMove: 1 },
         });
-        series.setData(sampled);
-      });
+        series.setData(bandData);
+      }
 
-      // Re-add price on top so it's visible above bands
-      const priceTop = chart.addLineSeries({
+      // Price line on top
+      const priceData = sampled.map(p => ({
+        time: Math.floor(p.ts / 1000),
+        value: Math.pow(10, p.logPrice),
+      }));
+
+      const priceSeries = chart.addLineSeries({
         color: CHART_COLORS.gold,
         lineWidth: 2,
         priceFormat: { type: 'price', precision: 0, minMove: 1 },
         lastValueVisible: true,
       });
-      // Sample price data for performance
-      const priceStep = Math.max(1, Math.floor(priceData.length / 800));
-      priceTop.setData(priceData.filter((_, i) => i % priceStep === 0));
+      priceSeries.setData(priceData);
 
       chart.timeScale().fitContent();
       chartInstances[containerId] = chart;
