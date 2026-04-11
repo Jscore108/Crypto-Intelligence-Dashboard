@@ -92,17 +92,25 @@
       });
     });
 
-    // Load news
+    // Load news — both tabs in parallel
     async function loadNews() {
-      try {
-        const articles = await News.fetchCryptoNews();
+      // Crypto news
+      News.fetchCryptoNews().then(articles => {
         News.renderCryptoNews('crypto-news-container', articles);
-      } catch (err) {
-        console.error('[News] Load failed:', err);
+      }).catch(err => {
+        console.error('[News] Crypto load failed:', err);
         document.getElementById('crypto-news-container').innerHTML =
-          '<div class="empty-state"><div class="empty-state__text">Failed to load news. Will retry in 15 minutes.</div></div>';
-      }
-      News.renderMacroNews('macro-news-container');
+          '<div class="empty-state"><div class="empty-state__text">Failed to load crypto news. Will retry in 15 minutes.</div></div>';
+      });
+
+      // Macro / World news
+      News.fetchMacroNews().then(articles => {
+        News.renderMacroNews('macro-news-container', articles);
+      }).catch(err => {
+        console.error('[News] Macro load failed:', err);
+        document.getElementById('macro-news-container').innerHTML =
+          '<div class="empty-state"><div class="empty-state__text">Failed to load macro news. Will retry in 15 minutes.</div></div>';
+      });
     }
 
     (async () => {

@@ -4,28 +4,51 @@
 // ============================================================
 
 const API = (() => {
-  // --- Cache ---
+  // --- In-memory cache + localStorage persistence ---
   const cache = {};
   const CACHE_TTL = {
-    prices: 60 * 1000,        // 60s
-    fng: 5 * 60 * 1000,       // 5min
-    global: 5 * 60 * 1000,    // 5min
-    markets: 5 * 60 * 1000,   // 5min
-    historical: 30 * 60 * 1000, // 30min
-    news: 15 * 60 * 1000,     // 15min
+    prices: 60 * 1000,
+    fng: 5 * 60 * 1000,
+    global: 5 * 60 * 1000,
+    markets: 5 * 60 * 1000,
+    historical: 30 * 60 * 1000,
+    news: 15 * 60 * 1000,
   };
+
+  // Load persisted cache from localStorage on startup
+  try {
+    const stored = localStorage.getItem('ci_api_cache');
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      Object.assign(cache, parsed);
+    }
+  } catch (_) {}
 
   function getCached(key) {
     const entry = cache[key];
     if (!entry) return null;
     if (Date.now() - entry.timestamp > (CACHE_TTL[entry.type] || 60000)) {
-      return null; // expired
+      return null;
     }
     return entry.data;
   }
 
+  // Return stale data if available (for instant display)
+  function getStale(key) {
+    const entry = cache[key];
+    return entry ? entry.data : null;
+  }
+
   function setCache(key, data, type = 'prices') {
     cache[key] = { data, timestamp: Date.now(), type };
+    // Persist to localStorage (skip large historical data)
+    try {
+      const toStore = {};
+      for (const [k, v] of Object.entries(cache)) {
+        if (!k.startsWith('history_')) toStore[k] = v;
+      }
+      localStorage.setItem('ci_api_cache', JSON.stringify(toStore));
+    } catch (_) {}
   }
 
   // --- Fetch with timeout and retry on rate limit ---
