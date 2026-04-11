@@ -178,29 +178,48 @@ Write a structured daily intelligence briefing with these sections:
 
 Be direct. No fluff. Institutional tone but readable.`;
 
-        // Call Anthropic API
-        const response = await fetch('https://api.anthropic.com/v1/messages', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': apiKey,
-            'anthropic-version': '2023-06-01',
-            'anthropic-dangerous-direct-browser-access': 'true',
-          },
-          body: JSON.stringify({
-            model: 'claude-sonnet-4-20250514',
-            max_tokens: 2000,
-            messages: [{ role: 'user', content: prompt }],
-          }),
-        });
+        // Call Anthropic API (direct browser access)
+        let briefingText = '';
+        try {
+          const response = await fetch('https://api.anthropic.com/v1/messages', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-api-key': apiKey,
+              'anthropic-version': '2023-06-01',
+              'anthropic-dangerous-direct-browser-access': 'true',
+            },
+            body: JSON.stringify({
+              model: 'claude-sonnet-4-20250514',
+              max_tokens: 2000,
+              messages: [{ role: 'user', content: prompt }],
+            }),
+          });
 
-        if (!response.ok) {
-          const errData = await response.json().catch(() => ({}));
-          throw new Error(errData.error?.message || `API error: ${response.status}`);
+          if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            const errMsg = errData.error?.message || `API error: ${response.status}`;
+            if (response.status === 403 || errMsg.includes('CORS') || errMsg.includes('browser')) {
+              throw new Error('CORS_BLOCKED');
+            }
+            throw new Error(errMsg);
+          }
+
+          const result = await response.json();
+          briefingText = result.content?.[0]?.text || 'No response generated.';
+        } catch (directErr) {
+          if (directErr.message === 'CORS_BLOCKED' || directErr.message.includes('Failed to fetch') || directErr.message.includes('NetworkError')) {
+            // CORS blocked — try via cors-anywhere proxy or show instructions
+            throw new Error(
+              'Browser CORS blocked the API call. To fix this:\n\n' +
+              '1. Go to console.anthropic.com > Settings > API Keys\n' +
+              '2. Edit your API key and enable "Allow browser access"\n' +
+              '3. Or use the API key from a server/backend instead.\n\n' +
+              'Technical: Anthropic requires the "anthropic-dangerous-direct-browser-access" header and your key must have browser access enabled.'
+            );
+          }
+          throw directErr;
         }
-
-        const result = await response.json();
-        const briefingText = result.content?.[0]?.text || 'No response generated.';
 
         // Render briefing
         renderBriefing(output, briefingText, today);

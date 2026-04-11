@@ -130,7 +130,7 @@ const Indicators = (() => {
     const normalized = Math.max(0, Math.min(100, (v / 4) * 100));
 
     let label, color;
-    if (v >= 2) { label: 'Sell Zone'; color = 'red'; }
+    if (v >= 2) { label = 'Sell Zone'; color = 'red'; }
     else if (v >= 1.5) { label = 'Overheated'; color = 'red'; }
     else if (v >= 1) { label = 'Neutral'; color = 'yellow'; }
     else if (v >= 0.5) { label = 'Accumulation'; color = 'green'; }
