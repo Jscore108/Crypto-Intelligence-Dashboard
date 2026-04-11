@@ -75,7 +75,9 @@
         <span class="top-bar__value font-mono" id="ticker-composite">--</span>
       </div>
       <div class="top-bar__item">
-        <span class="top-bar__timestamp" id="ticker-updated">Last updated: --</span>
+        <span class="live-dot"></span>
+        <span class="top-bar__timestamp" id="ticker-updated">Updating...</span>
+        <span class="top-bar__countdown font-mono" id="ticker-countdown"></span>
       </div>
     </div>
   </div>
@@ -714,9 +716,66 @@
     }
 
     // --- Init ---
+    // --- Track previous prices for flash detection ---
+    let prevBtcPrice = 0, prevEthPrice = 0;
+
+    function flashPrice(elId, newPrice, oldPrice) {
+      if (oldPrice === 0) return;
+      const el = document.getElementById(elId);
+      if (!el) return;
+      el.classList.remove('price-flash-up', 'price-flash-down');
+      void el.offsetWidth; // force reflow
+      if (newPrice > oldPrice) el.classList.add('price-flash-up');
+      else if (newPrice < oldPrice) el.classList.add('price-flash-down');
+    }
+
+    // --- Fast price-only refresh (every 15s) ---
+    async function updatePricesOnly() {
+      try {
+        // Clear cache so we get fresh prices
+        const prices = await API.getPrices();
+        if (!prices) return;
+
+        const btc = prices.bitcoin, eth = prices.ethereum;
+        if (btc) {
+          flashPrice('ticker-btc-price', btc.usd, prevBtcPrice);
+          prevBtcPrice = btc.usd;
+          document.getElementById('ticker-btc-price').textContent = formatPrice(btc.usd);
+          const el = document.getElementById('ticker-btc-change');
+          el.textContent = formatPct(btc.usd_24h_change);
+          el.className = `top-bar__change top-bar__change--${btc.usd_24h_change >= 0 ? 'up' : 'down'}`;
+        }
+        if (eth) {
+          flashPrice('ticker-eth-price', eth.usd, prevEthPrice);
+          prevEthPrice = eth.usd;
+          document.getElementById('ticker-eth-price').textContent = formatPrice(eth.usd);
+          const el = document.getElementById('ticker-eth-change');
+          el.textContent = formatPct(eth.usd_24h_change);
+          el.className = `top-bar__change top-bar__change--${eth.usd_24h_change >= 0 ? 'up' : 'down'}`;
+        }
+        // Update sell targets too
+        renderSellTargets(prices);
+        document.getElementById('ticker-updated').textContent = 'Live · ' + new Date().toLocaleTimeString();
+      } catch (_) {}
+    }
+
+    // --- Countdown timer ---
+    let countdown = 15;
+    function tickCountdown() {
+      countdown--;
+      if (countdown <= 0) countdown = 15;
+      const el = document.getElementById('ticker-countdown');
+      if (el) el.textContent = countdown + 's';
+    }
+
     (async function init() {
       await updateDashboard();
+      // Full dashboard refresh every 60s
       setInterval(updateDashboard, 60000);
+      // Fast price refresh every 15s
+      setInterval(updatePricesOnly, 15000);
+      // Countdown tick every 1s
+      setInterval(tickCountdown, 1000);
     })();
 
     // --- Draggable Hex Bubbles ---

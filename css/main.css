@@ -152,6 +152,36 @@ h1, h2, h3 { font-family: 'Orbitron', sans-serif; font-weight: 700; letter-spaci
 .top-bar__change--up { color: var(--accent-neon-green); background: rgba(0, 255, 163, 0.12); border: 1px solid rgba(0, 255, 163, 0.2); text-shadow: 0 0 8px rgba(0, 255, 163, 0.5); box-shadow: 0 0 8px rgba(0, 255, 163, 0.08); }
 .top-bar__change--down { color: var(--accent-red); background: rgba(255, 45, 85, 0.12); border: 1px solid rgba(255, 45, 85, 0.2); text-shadow: 0 0 8px rgba(255, 45, 85, 0.5); box-shadow: 0 0 8px rgba(255, 45, 85, 0.08); }
 .top-bar__timestamp { font-size: 0.68rem; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; }
+.top-bar__countdown { font-size: 0.6rem; color: var(--text-muted); }
+
+/* Live pulse dot */
+.live-dot {
+  width: 7px; height: 7px;
+  background: var(--accent-neon-green);
+  border-radius: 50%;
+  display: inline-block;
+  box-shadow: 0 0 6px var(--accent-neon-green);
+  animation: livePulse 1.5s ease-in-out infinite;
+}
+
+@keyframes livePulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 6px var(--accent-neon-green); }
+  50% { opacity: 0.4; box-shadow: 0 0 2px var(--accent-neon-green); }
+}
+
+/* Price flash on change */
+@keyframes priceFlashGreen {
+  0% { color: var(--accent-neon-green); text-shadow: 0 0 12px rgba(0,255,163,0.5); }
+  100% { color: var(--text-primary); text-shadow: 0 0 8px rgba(238,240,255,0.2); }
+}
+
+@keyframes priceFlashRed {
+  0% { color: var(--accent-red); text-shadow: 0 0 12px rgba(255,45,85,0.5); }
+  100% { color: var(--text-primary); text-shadow: 0 0 8px rgba(238,240,255,0.2); }
+}
+
+.price-flash-up { animation: priceFlashGreen 1s ease-out; }
+.price-flash-down { animation: priceFlashRed 1s ease-out; }
 
 /* --- Section Headers --- */
 .section-header {
