@@ -238,8 +238,8 @@ h1, h2, h3 { font-family: 'Orbitron', sans-serif; font-weight: 700; letter-spaci
 }
 
 .hex-bubble {
-  width: 120px;
-  height: 130px;
+  width: 150px;
+  height: 163px;
   clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
   background: rgba(10, 14, 28, 0.75);
   position: relative;
@@ -251,7 +251,7 @@ h1, h2, h3 { font-family: 'Orbitron', sans-serif; font-weight: 700; letter-spaci
   z-index: 1;
 }
 
-.hex-bubble--lg { width: 135px; height: 146px; }
+.hex-bubble--lg { width: 170px; height: 185px; }
 
 .hex-bubble:active { cursor: grabbing; }
 
@@ -298,44 +298,44 @@ h1, h2, h3 { font-family: 'Orbitron', sans-serif; font-weight: 700; letter-spaci
 
 .hex-bubble__label {
   font-family: 'Orbitron', sans-serif;
-  font-size: 0.48rem; font-weight: 700;
+  font-size: 0.6rem; font-weight: 700;
   color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em;
 }
 
 .hex-bubble__value {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 1.05rem; font-weight: 800;
+  font-size: 1.4rem; font-weight: 800;
   color: var(--text-primary);
-  text-shadow: 0 0 10px rgba(238, 240, 255, 0.2);
+  text-shadow: 0 0 12px rgba(238, 240, 255, 0.25);
   line-height: 1.2;
 }
 
 .hex-bubble__target {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.5rem; color: var(--accent-red); opacity: 0.7;
-  text-shadow: 0 0 4px rgba(255, 45, 85, 0.2);
+  font-size: 0.6rem; color: var(--accent-red); opacity: 0.8;
+  text-shadow: 0 0 6px rgba(255, 45, 85, 0.3);
 }
 
 .hex-bubble__pct {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.48rem; font-weight: 600;
-  padding: 1px 4px; border-radius: 3px;
+  font-size: 0.58rem; font-weight: 700;
+  padding: 2px 5px; border-radius: 3px;
 }
 
 .hex-bubble__badge {
   font-family: 'Orbitron', sans-serif;
-  font-size: 0.42rem; font-weight: 700;
+  font-size: 0.52rem; font-weight: 700;
   text-transform: uppercase; letter-spacing: 0.06em;
   color: var(--text-muted);
 }
 
 @media (max-width: 768px) {
   .hex-field { min-height: 180px; gap: 6px; }
-  .hex-bubble { width: 90px; height: 98px; }
-  .hex-bubble--lg { width: 100px; height: 109px; }
-  .hex-bubble__value { font-size: 0.8rem; }
-  .hex-bubble__label { font-size: 0.4rem; }
-  .hex-bubble__target { font-size: 0.4rem; }
+  .hex-bubble { width: 110px; height: 120px; }
+  .hex-bubble--lg { width: 125px; height: 136px; }
+  .hex-bubble__value { font-size: 1rem; }
+  .hex-bubble__label { font-size: 0.48rem; }
+  .hex-bubble__target { font-size: 0.48rem; }
 }
 
 /* --- Geometric Stat Card (legacy) --- */
