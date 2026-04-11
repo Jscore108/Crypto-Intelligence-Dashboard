@@ -226,35 +226,18 @@ h1, h2, h3 { font-family: 'Orbitron', sans-serif; font-weight: 700; letter-spaci
 
 /* --- Composite Score — top right corner --- */
 .composite-topright {
-  position: absolute;
-  top: 0;
-  right: 0;
-  z-index: 10;
   display: flex;
-  flex-direction: column;
-  gap: 8px;
-  max-width: 240px;
-}
-
-.composite-topright .gauge-container {
-  padding: 14px;
-}
-
-.composite-topright .gauge-svg {
-  width: 180px;
-  height: 110px;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 16px;
+  max-width: 520px;
 }
 
 @media (max-width: 768px) {
   .composite-topright {
-    position: relative;
-    max-width: 100%;
-    flex-direction: row;
     flex-wrap: wrap;
-    margin-bottom: 16px;
+    max-width: 100%;
   }
-  .composite-topright .gauge-container { min-width: 180px; }
-  .composite-topright .indicator-card { flex: 1; min-width: 200px; }
 }
 
 /* --- Hexagon Scatter Field — full width, absolute positioned --- */
