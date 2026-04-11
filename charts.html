@@ -116,13 +116,15 @@
 
     async function loadAllCharts(days) {
       currentDays = days;
-      // Load charts sequentially to respect rate limits
-      await Charts.renderBTCPrice('chart-btc-price', days);
-      await Charts.renderETHPrice('chart-eth-price', days);
-      await Charts.renderETHBTC('chart-ethbtc', days);
-      await Charts.renderFearGreed('chart-fng');
-      await Charts.renderBTCDominance('chart-btc-dominance', days);
-      await Charts.renderSOLPrice('chart-sol-price', days);
+      // Load all charts in parallel for speed
+      await Promise.all([
+        Charts.renderBTCPrice('chart-btc-price', days),
+        Charts.renderETHPrice('chart-eth-price', days),
+        Charts.renderETHBTC('chart-ethbtc', days),
+        Charts.renderFearGreed('chart-fng'),
+        Charts.renderBTCDominance('chart-btc-dominance', days),
+        Charts.renderSOLPrice('chart-sol-price', days),
+      ]);
     }
 
     // Timeframe buttons

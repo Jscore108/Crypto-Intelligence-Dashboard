@@ -28,18 +28,8 @@ const API = (() => {
     cache[key] = { data, timestamp: Date.now(), type };
   }
 
-  // --- Rate Limiter (CoinGecko: ~10-30 req/min) ---
-  let lastRequest = 0;
-  const MIN_INTERVAL = 1500; // 1.5s between requests
-
+  // --- Fetch with timeout (no artificial delay) ---
   async function rateLimitedFetch(url, options = {}) {
-    const now = Date.now();
-    const wait = MIN_INTERVAL - (now - lastRequest);
-    if (wait > 0) {
-      await new Promise(r => setTimeout(r, wait));
-    }
-    lastRequest = Date.now();
-
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 15000);
 
@@ -265,38 +255,41 @@ const API = (() => {
   }
 
   /**
-   * Fetch all dashboard data in one call
-   * Staggers requests to respect rate limits
+   * Fetch all dashboard data in parallel for speed
    */
   async function fetchAllDashboardData() {
-    const results = {};
+    const [prices, fearGreed, global, ethBtcRatio, topCoins] = await Promise.all([
+      getPrices().catch(() => null),
+      getFearGreed().catch(() => null),
+      getGlobalData().catch(() => null),
+      getETHBTCRatio().catch(() => null),
+      getTopCoins(50).catch(() => null),
+    ]);
 
-    try {
-      results.prices = await getPrices();
-    } catch (e) { results.prices = null; }
+    // Alt season derived from topCoins (no extra fetch)
+    let altSeason = null;
+    if (topCoins && topCoins.length > 0) {
+      try {
+        const btc = topCoins.find(c => c.id === 'bitcoin');
+        if (btc) {
+          const btcChange = btc.price_change_percentage_24h || 0;
+          const alts = topCoins.filter(c => c.id !== 'bitcoin');
+          let outperformCount = 0;
+          alts.forEach(coin => {
+            if ((coin.price_change_percentage_24h || 0) > btcChange) outperformCount++;
+          });
+          const index = Math.round((outperformCount / alts.length) * 100);
+          altSeason = {
+            value: index,
+            outperforming: outperformCount,
+            total: alts.length,
+            label: index > 75 ? 'Alt Season' : index < 25 ? 'Bitcoin Season' : 'Neutral',
+          };
+        }
+      } catch (e) { /* skip */ }
+    }
 
-    try {
-      results.fearGreed = await getFearGreed();
-    } catch (e) { results.fearGreed = null; }
-
-    try {
-      results.global = await getGlobalData();
-    } catch (e) { results.global = null; }
-
-    try {
-      results.ethBtcRatio = await getETHBTCRatio();
-    } catch (e) { results.ethBtcRatio = null; }
-
-    try {
-      results.altSeason = await getAltSeasonIndex();
-    } catch (e) { results.altSeason = null; }
-
-    try {
-      results.topCoins = await getTopCoins(50);
-    } catch (e) { results.topCoins = null; }
-
-    results.timestamp = Date.now();
-    return results;
+    return { prices, fearGreed, global, ethBtcRatio, altSeason, topCoins, timestamp: Date.now() };
   }
 
   /**
