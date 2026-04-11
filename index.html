@@ -86,9 +86,20 @@
     <!-- Composite Score + Summary Row -->
     <div class="dashboard-top-grid">
 
-      <!-- Composite Gauge -->
-      <div class="gauge-container" id="composite-gauge">
-        <div class="skeleton" style="width:200px;height:120px;"></div>
+      <!-- Composite Gauge + Breakdown -->
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div class="gauge-container" id="composite-gauge">
+          <div class="skeleton" style="width:200px;height:120px;"></div>
+        </div>
+        <div class="indicator-card" id="composite-breakdown" style="padding:14px;">
+          <div class="indicator-card__header" style="margin-bottom:8px;">
+            <span class="indicator-card__title">Score Breakdown</span>
+            <span class="status-badge status-badge--cyan">WEIGHTS</span>
+          </div>
+          <div id="composite-breakdown-content" style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--text-muted);">
+            Loading indicators...
+          </div>
+        </div>
       </div>
 
       <!-- Quick Stats Grid -->
@@ -369,11 +380,21 @@
       }
 
       // Composite Score
+      const rsiNorm = Math.max(0, Math.min(100, ((rsiVal - 30) / 40) * 100));
       const compositeScore = Composite.calculate(fngVal, mvrvNorm, piCycleVal, rsiVal);
       Composite.renderGauge(document.getElementById('composite-gauge'), compositeScore);
       document.getElementById('ticker-composite').textContent = compositeScore + '/100';
       const compZone = Composite.getZone(compositeScore);
       document.getElementById('ticker-composite').style.color = compZone.color;
+
+      // Render breakdown
+      const fngNorm = Math.max(0, Math.min(100, Number(fngVal) || 50));
+      renderCompositeBreakdown({
+        'Fear & Greed': { value: fngNorm, weight: 25, raw: fngVal, contribution: (fngNorm * 0.25).toFixed(1) },
+        'MVRV Z-Score': { value: mvrvNorm, weight: 30, raw: estMvrv !== null ? estMvrv.toFixed(2) : '--', contribution: (mvrvNorm * 0.30).toFixed(1) },
+        'Pi Cycle': { value: piCycleVal, weight: 25, raw: piCycle?.ratio ? piCycle.ratio.toFixed(4) : '--', contribution: (piCycleVal * 0.25).toFixed(1) },
+        'RSI (14)': { value: rsiNorm, weight: 20, raw: rsiVal.toFixed(1), contribution: (rsiNorm * 0.20).toFixed(1) },
+      }, compositeScore);
 
       // Update indicator sell levels card
       renderIndicatorLevels({
@@ -383,6 +404,38 @@
         'RSI (14)': rsiVal,
         'Pi Cycle': piCycle?.ratio || null,
       });
+    }
+
+    // --- Render Composite Breakdown ---
+    function renderCompositeBreakdown(indicators, totalScore) {
+      const container = document.getElementById('composite-breakdown-content');
+      if (!container) return;
+
+      let html = '';
+      for (const [name, ind] of Object.entries(indicators)) {
+        const barWidth = Math.max(2, ind.value);
+        const color = ind.value > 70 ? 'var(--accent-red)' :
+                      ind.value > 40 ? 'var(--accent-gold)' : 'var(--accent-neon-green)';
+
+        html += `
+          <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(100,120,200,0.06);">
+            <div style="width:75px;color:var(--text-secondary);font-size:0.68rem;flex-shrink:0;">${name}</div>
+            <div style="flex:1;height:4px;background:rgba(100,120,200,0.1);border-radius:2px;overflow:hidden;">
+              <div style="width:${barWidth}%;height:100%;background:${color};border-radius:2px;box-shadow:0 0 6px ${color};"></div>
+            </div>
+            <div style="width:40px;text-align:right;color:var(--text-primary);font-weight:600;font-size:0.7rem;">${ind.raw}</div>
+            <div style="width:28px;text-align:right;color:${color};font-size:0.62rem;">${ind.weight}%</div>
+            <div style="width:30px;text-align:right;color:var(--text-muted);font-size:0.62rem;">+${ind.contribution}</div>
+          </div>`;
+      }
+
+      html += `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding-top:8px;margin-top:4px;">
+          <span style="font-family:'Orbitron',sans-serif;font-size:0.62rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;">Total</span>
+          <span style="font-family:'Orbitron',sans-serif;font-size:0.85rem;font-weight:800;color:${Composite.getGaugeColor(totalScore)};text-shadow:0 0 10px ${Composite.getGaugeColor(totalScore)};">${totalScore}/100</span>
+        </div>`;
+
+      container.innerHTML = html;
     }
 
     // --- Render Sell Targets Grid ---
