@@ -81,7 +81,23 @@
   </div>
 
   <!-- ===== Page Content ===== -->
-  <main class="page-content">
+  <main class="page-content" style="position:relative;">
+
+    <!-- Composite Score — pinned top right corner -->
+    <div class="composite-topright">
+      <div class="gauge-container" id="composite-gauge" style="padding:16px;">
+        <div class="skeleton" style="width:160px;height:100px;"></div>
+      </div>
+      <div class="indicator-card" id="composite-breakdown" style="padding:10px;">
+        <div class="indicator-card__header" style="margin-bottom:4px;">
+          <span class="indicator-card__title" style="font-size:0.5rem;">Score Breakdown</span>
+          <span class="status-badge status-badge--cyan" style="font-size:0.45rem;padding:2px 6px;">WEIGHTS</span>
+        </div>
+        <div id="composite-breakdown-content" style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--text-muted);">
+          Loading...
+        </div>
+      </div>
+    </div>
 
     <!-- Hexagon Indicator Field — scattered across full width, center open for BTC symbol -->
     <div class="hex-scatter" id="hex-field">
@@ -149,21 +165,7 @@
       </div>
     </div>
 
-    <!-- Composite Score — top right -->
-    <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;margin-bottom:24px;max-width:600px;margin-left:auto;">
-      <div class="gauge-container" id="composite-gauge" style="min-width:200px;">
-        <div class="skeleton" style="width:180px;height:110px;"></div>
-      </div>
-      <div class="indicator-card" id="composite-breakdown" style="padding:12px;flex:1;min-width:260px;">
-        <div class="indicator-card__header" style="margin-bottom:6px;">
-          <span class="indicator-card__title">Score Breakdown</span>
-          <span class="status-badge status-badge--cyan">WEIGHTS</span>
-        </div>
-        <div id="composite-breakdown-content" style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--text-muted);">
-          Loading indicators...
-        </div>
-      </div>
-    </div>
+    <!-- (composite moved to top-right corner above) -->
 
     <!-- Indicator Grid -->
     <div class="section-header">
