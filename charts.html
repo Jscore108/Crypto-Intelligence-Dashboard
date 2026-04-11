@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Charts - Crypto Intelligence Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/charts.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="top-nav">
+    <div class="top-nav__inner">
+      <div class="top-nav__brand">
+        <div class="top-nav__brand-icon">CI</div>
+        <span>Crypto Intel</span>
+      </div>
+      <button class="nav-toggle" onclick="document.querySelector('.top-nav__links').classList.toggle('open')" aria-label="Toggle navigation">&#9776;</button>
+      <div class="top-nav__links">
+        <a href="index.html">Dashboard</a>
+        <a href="sell-zones.html">Sell Zones</a>
+        <a href="charts.html" class="active">Charts</a>
+        <a href="news.html">News</a>
+        <a href="briefing.html">Briefing</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="page-content">
+    <div class="section-header">
+      <h2>Interactive Charts</h2>
+      <div class="chart-panel__controls" id="global-timeframe">
+        <button class="active" data-days="365">1Y</button>
+        <button data-days="730">2Y</button>
+        <button data-days="max">All</button>
+      </div>
+    </div>
+
+    <div class="charts-grid">
+
+      <!-- BTC Price -->
+      <div class="chart-panel chart-panel--full">
+        <div class="chart-panel__header">
+          <div class="chart-panel__title">BTC/USD — Sell Zones Overlay</div>
+        </div>
+        <div class="chart-panel__body" id="chart-btc-price">
+          <div class="chart-loading loading-pulse">Loading chart...</div>
+        </div>
+      </div>
+
+      <!-- ETH Price -->
+      <div class="chart-panel">
+        <div class="chart-panel__header">
+          <div class="chart-panel__title">ETH/USD — Sell Zones</div>
+        </div>
+        <div class="chart-panel__body" id="chart-eth-price">
+          <div class="chart-loading loading-pulse">Loading chart...</div>
+        </div>
+      </div>
+
+      <!-- ETH/BTC Ratio -->
+      <div class="chart-panel">
+        <div class="chart-panel__header">
+          <div class="chart-panel__title">ETH/BTC Ratio</div>
+        </div>
+        <div class="chart-panel__body" id="chart-ethbtc">
+          <div class="chart-loading loading-pulse">Loading chart...</div>
+        </div>
+      </div>
+
+      <!-- Fear & Greed -->
+      <div class="chart-panel">
+        <div class="chart-panel__header">
+          <div class="chart-panel__title">Fear &amp; Greed Index</div>
+        </div>
+        <div class="chart-panel__body" id="chart-fng">
+          <div class="chart-loading loading-pulse">Loading chart...</div>
+        </div>
+      </div>
+
+      <!-- BTC Market Cap (Dominance proxy) -->
+      <div class="chart-panel">
+        <div class="chart-panel__header">
+          <div class="chart-panel__title">BTC Market Cap ($B)</div>
+        </div>
+        <div class="chart-panel__body" id="chart-btc-dominance">
+          <div class="chart-loading loading-pulse">Loading chart...</div>
+        </div>
+      </div>
+
+      <!-- SOL Price -->
+      <div class="chart-panel chart-panel--full">
+        <div class="chart-panel__header">
+          <div class="chart-panel__title">SOL/USD — Target Overlay</div>
+        </div>
+        <div class="chart-panel__body" id="chart-sol-price">
+          <div class="chart-loading loading-pulse">Loading chart...</div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- TradingView Lightweight Charts -->
+  <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/charts.js"></script>
+  <script>
+    let currentDays = 365;
+
+    async function loadAllCharts(days) {
+      currentDays = days;
+      // Load charts sequentially to respect rate limits
+      await Charts.renderBTCPrice('chart-btc-price', days);
+      await Charts.renderETHPrice('chart-eth-price', days);
+      await Charts.renderETHBTC('chart-ethbtc', days);
+      await Charts.renderFearGreed('chart-fng');
+      await Charts.renderBTCDominance('chart-btc-dominance', days);
+      await Charts.renderSOLPrice('chart-sol-price', days);
+    }
+
+    // Timeframe buttons
+    document.getElementById('global-timeframe').addEventListener('click', (e) => {
+      if (e.target.tagName !== 'BUTTON') return;
+      document.querySelectorAll('#global-timeframe button').forEach(b => b.classList.remove('active'));
+      e.target.classList.add('active');
+      const days = e.target.dataset.days === 'max' ? 'max' : Number(e.target.dataset.days);
+      loadAllCharts(days);
+    });
+
+    // Init
+    loadAllCharts(365);
+  </script>
+</body>
+</html>

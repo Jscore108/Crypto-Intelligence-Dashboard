@@ -1,0 +1,27 @@
+# Environment variables
+.env
+alerts/.env
+
+# Alert logs
+alerts/alert_log.json
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.venv/
+
+# Node (if added later)
+node_modules/
+.vercel/

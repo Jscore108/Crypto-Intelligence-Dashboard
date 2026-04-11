@@ -1,0 +1,43 @@
+{
+  "email_method": "sendgrid",
+  "email_to": "",
+  "cooldown_hours": 4,
+  "sell_zones": {
+    "BTC": [
+      { "label": "ATH Target", "price": 126000, "alert_threshold_pct": 5 },
+      { "label": "1.618 Fib", "price": 167000, "alert_threshold_pct": 5 }
+    ],
+    "ETH": [
+      { "label": "Resistance 1", "price": 4300, "alert_threshold_pct": 5 },
+      { "label": "Resistance 2", "price": 5000, "alert_threshold_pct": 5 },
+      { "label": "1.618 Fib", "price": 6900, "alert_threshold_pct": 5 }
+    ],
+    "LINK": [
+      { "label": "0.786 Fib", "price": 24, "alert_threshold_pct": 5 },
+      { "label": "52W High", "price": 28, "alert_threshold_pct": 5 },
+      { "label": "~1.618 Fib", "price": 38, "alert_threshold_pct": 5 },
+      { "label": "2.618 Fib", "price": 62, "alert_threshold_pct": 5 }
+    ],
+    "SOL": [
+      { "label": "Target", "price": 418, "alert_threshold_pct": 5 }
+    ],
+    "BRETT": [
+      { "label": "T1", "price": 0.075, "alert_threshold_pct": 10 },
+      { "label": "T2", "price": 0.09, "alert_threshold_pct": 10 },
+      { "label": "T3", "price": 0.12, "alert_threshold_pct": 10 },
+      { "label": "T4", "price": 0.18, "alert_threshold_pct": 10 }
+    ],
+    "POPCAT": [
+      { "label": "T1", "price": 0.35, "alert_threshold_pct": 10 },
+      { "label": "T2", "price": 0.55, "alert_threshold_pct": 10 },
+      { "label": "T3", "price": 0.85, "alert_threshold_pct": 10 },
+      { "label": "T4", "price": 1.258, "alert_threshold_pct": 10 }
+    ],
+    "WIF": [
+      { "label": "T1", "price": 0.90, "alert_threshold_pct": 10 },
+      { "label": "T2", "price": 1.50, "alert_threshold_pct": 10 },
+      { "label": "T3", "price": 2.08, "alert_threshold_pct": 10 },
+      { "label": "T4", "price": 3.20, "alert_threshold_pct": 10 }
+    ]
+  }
+}

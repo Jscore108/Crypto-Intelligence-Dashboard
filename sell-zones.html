@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sell Zones - Crypto Intelligence Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="top-nav">
+    <div class="top-nav__inner">
+      <div class="top-nav__brand">
+        <div class="top-nav__brand-icon">CI</div>
+        <span>Crypto Intel</span>
+      </div>
+      <button class="nav-toggle" onclick="document.querySelector('.top-nav__links').classList.toggle('open')" aria-label="Toggle navigation">&#9776;</button>
+      <div class="top-nav__links">
+        <a href="index.html">Dashboard</a>
+        <a href="sell-zones.html" class="active">Sell Zones</a>
+        <a href="charts.html">Charts</a>
+        <a href="news.html">News</a>
+        <a href="briefing.html">Briefing</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Top Bar -->
+  <div class="top-bar">
+    <div class="top-bar__inner">
+      <div class="top-bar__item">
+        <span class="top-bar__label">BTC</span>
+        <span class="top-bar__value font-mono" id="ticker-btc">--</span>
+      </div>
+      <div class="top-bar__item">
+        <span class="top-bar__label">ETH</span>
+        <span class="top-bar__value font-mono" id="ticker-eth">--</span>
+      </div>
+      <div class="top-bar__item">
+        <span class="top-bar__timestamp" id="ticker-updated">Last updated: --</span>
+      </div>
+    </div>
+  </div>
+
+  <main class="page-content">
+    <div class="section-header">
+      <h2>Sell Zone Tracker</h2>
+      <span class="section-header__badge">Auto-refresh: 60s</span>
+    </div>
+
+    <!-- Legend -->
+    <div style="display:flex;gap:20px;margin-bottom:20px;flex-wrap:wrap;">
+      <div style="display:flex;align-items:center;gap:6px;font-size:0.75rem;">
+        <div style="width:12px;height:12px;border-radius:2px;background:var(--accent-green)"></div>
+        <span class="text-muted">&gt;20% away</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:0.75rem;">
+        <div style="width:12px;height:12px;border-radius:2px;background:var(--accent-gold)"></div>
+        <span class="text-muted">10-20% away</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:0.75rem;">
+        <div style="width:12px;height:12px;border-radius:2px;background:var(--accent-orange)"></div>
+        <span class="text-muted">&lt;10% away</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:0.75rem;">
+        <div style="width:12px;height:12px;border-radius:2px;background:var(--accent-red)"></div>
+        <span class="text-muted">In zone / Reached</span>
+      </div>
+    </div>
+
+    <!-- Sell Zone Grid -->
+    <div id="sell-zones-container">
+      <div class="empty-state loading-pulse">
+        <div class="empty-state__text">Loading sell zone data...</div>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/indicators.js"></script>
+  <script src="js/sell-zones.js"></script>
+  <script>
+    async function updateSellZones() {
+      try {
+        const prices = await API.getPrices();
+        if (prices) {
+          SellZones.render('sell-zones-container', prices);
+
+          // Update ticker
+          if (prices.bitcoin) {
+            document.getElementById('ticker-btc').textContent =
+              '$' + Number(prices.bitcoin.usd).toLocaleString();
+          }
+          if (prices.ethereum) {
+            document.getElementById('ticker-eth').textContent =
+              '$' + Number(prices.ethereum.usd).toLocaleString();
+          }
+          document.getElementById('ticker-updated').textContent =
+            'Updated: ' + new Date().toLocaleTimeString();
+        }
+      } catch (err) {
+        console.error('[SellZones] Update failed:', err);
+      }
+    }
+
+    (async () => {
+      await updateSellZones();
+      setInterval(updateSellZones, 60000);
+    })();
+  </script>
+</body>
+</html>

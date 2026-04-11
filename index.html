@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crypto Intelligence Dashboard</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+</head>
+<body>
+
+  <!-- ===== Top Navigation ===== -->
+  <nav class="top-nav">
+    <div class="top-nav__inner">
+      <div class="top-nav__brand">
+        <div class="top-nav__brand-icon">CI</div>
+        <span>Crypto Intel</span>
+      </div>
+      <button class="nav-toggle" onclick="document.querySelector('.top-nav__links').classList.toggle('open')" aria-label="Toggle navigation">&#9776;</button>
+      <div class="top-nav__links">
+        <a href="index.html" class="active">Dashboard</a>
+        <a href="sell-zones.html">Sell Zones</a>
+        <a href="charts.html">Charts</a>
+        <a href="news.html">News</a>
+        <a href="briefing.html">Briefing</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ===== Top Bar (Live Ticker) ===== -->
+  <div class="top-bar">
+    <div class="top-bar__inner">
+      <div class="top-bar__item">
+        <span class="top-bar__label">BTC</span>
+        <span class="top-bar__value font-mono" id="ticker-btc-price">--</span>
+        <span class="top-bar__change" id="ticker-btc-change">--</span>
+      </div>
+      <div class="top-bar__item">
+        <span class="top-bar__label">ETH</span>
+        <span class="top-bar__value font-mono" id="ticker-eth-price">--</span>
+        <span class="top-bar__change" id="ticker-eth-change">--</span>
+      </div>
+      <div class="top-bar__item">
+        <span class="top-bar__label">Fear &amp; Greed</span>
+        <span class="top-bar__value font-mono" id="ticker-fng">--</span>
+      </div>
+      <div class="top-bar__item">
+        <span class="top-bar__label">Composite</span>
+        <span class="top-bar__value font-mono" id="ticker-composite">--</span>
+      </div>
+      <div class="top-bar__item">
+        <span class="top-bar__timestamp" id="ticker-updated">Last updated: --</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Page Content ===== -->
+  <main class="page-content">
+
+    <!-- Composite Score + Summary Row -->
+    <div style="display:grid; grid-template-columns: 280px 1fr; gap: 20px; margin-bottom: 24px;">
+
+      <!-- Composite Gauge -->
+      <div class="gauge-container" id="composite-gauge">
+        <div class="skeleton" style="width:200px;height:120px;"></div>
+      </div>
+
+      <!-- Quick Stats Grid -->
+      <div class="grid-3" id="quick-stats">
+        <div class="indicator-card">
+          <div class="indicator-card__header">
+            <span class="indicator-card__title">BTC Dominance</span>
+            <span class="status-badge status-badge--yellow" id="btcd-badge">--</span>
+          </div>
+          <div class="indicator-card__value" id="btcd-value">--</div>
+          <div class="indicator-card__label text-muted" id="btcd-label">Loading...</div>
+        </div>
+        <div class="indicator-card">
+          <div class="indicator-card__header">
+            <span class="indicator-card__title">ETH/BTC Ratio</span>
+            <span class="status-badge status-badge--yellow" id="ethbtc-badge">--</span>
+          </div>
+          <div class="indicator-card__value" id="ethbtc-value">--</div>
+          <div class="indicator-card__label text-muted" id="ethbtc-label">Loading...</div>
+        </div>
+        <div class="indicator-card">
+          <div class="indicator-card__header">
+            <span class="indicator-card__title">Alt Season Index</span>
+            <span class="status-badge status-badge--yellow" id="altseason-badge">--</span>
+          </div>
+          <div class="indicator-card__value" id="altseason-value">--</div>
+          <div class="indicator-card__label text-muted" id="altseason-label">Loading...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Indicator Grid -->
+    <div class="section-header">
+      <h2>Market Indicators</h2>
+      <span class="section-header__badge" id="indicator-update-badge">Auto-refresh: 60s</span>
+    </div>
+
+    <div class="grid-4" id="indicator-grid">
+
+      <!-- Fear & Greed -->
+      <div class="indicator-card" id="card-fng">
+        <div class="indicator-card__header">
+          <span class="indicator-card__title">Fear &amp; Greed</span>
+          <span class="status-badge" id="fng-badge">--</span>
+        </div>
+        <div class="indicator-card__value" id="fng-value">--</div>
+        <div class="indicator-card__label" id="fng-label">Loading...</div>
+      </div>
+
+      <!-- MVRV Z-Score -->
+      <div class="indicator-card" id="card-mvrv">
+        <div class="indicator-card__header">
+          <span class="indicator-card__title">MVRV Z-Score</span>
+          <span class="status-badge" id="mvrv-badge">--</span>
+        </div>
+        <div class="indicator-card__value" id="mvrv-value">--</div>
+        <div class="indicator-card__label" id="mvrv-label">Loading...</div>
+      </div>
+
+      <!-- Pi Cycle -->
+      <div class="indicator-card" id="card-picycle">
+        <div class="indicator-card__header">
+          <span class="indicator-card__title">Pi Cycle</span>
+          <span class="status-badge" id="picycle-badge">--</span>
+        </div>
+        <div class="indicator-card__value" id="picycle-value">--</div>
+        <div class="indicator-card__label" id="picycle-label">Loading...</div>
+      </div>
+
+      <!-- RSI (14) BTC -->
+      <div class="indicator-card" id="card-rsi">
+        <div class="indicator-card__header">
+          <span class="indicator-card__title">RSI (14) BTC</span>
+          <span class="status-badge" id="rsi-badge">--</span>
+        </div>
+        <div class="indicator-card__value" id="rsi-value">--</div>
+        <div class="indicator-card__label" id="rsi-label">Loading...</div>
+      </div>
+
+      <!-- Puell Multiple -->
+      <div class="indicator-card" id="card-puell">
+        <div class="indicator-card__header">
+          <span class="indicator-card__title">Puell Multiple</span>
+          <span class="status-badge" id="puell-badge">--</span>
+        </div>
+        <div class="indicator-card__value" id="puell-value">--</div>
+        <div class="indicator-card__label" id="puell-label">Loading...</div>
+      </div>
+
+      <!-- BTC Key Level -->
+      <div class="indicator-card" id="card-btc-level">
+        <div class="indicator-card__header">
+          <span class="indicator-card__title">BTC Key Level</span>
+          <span class="status-badge" id="btc-level-badge">--</span>
+        </div>
+        <div class="indicator-card__value" id="btc-level-value">--</div>
+        <div class="indicator-card__label" id="btc-level-label">Loading...</div>
+      </div>
+
+      <!-- ETH Key Level -->
+      <div class="indicator-card" id="card-eth-level">
+        <div class="indicator-card__header">
+          <span class="indicator-card__title">ETH Key Level</span>
+          <span class="status-badge" id="eth-level-badge">--</span>
+        </div>
+        <div class="indicator-card__value" id="eth-level-value">--</div>
+        <div class="indicator-card__label" id="eth-level-label">Loading...</div>
+      </div>
+
+      <!-- Market Cap -->
+      <div class="indicator-card" id="card-mcap">
+        <div class="indicator-card__header">
+          <span class="indicator-card__title">Total Market Cap</span>
+        </div>
+        <div class="indicator-card__value" id="mcap-value">--</div>
+        <div class="indicator-card__label text-muted" id="mcap-label">Loading...</div>
+      </div>
+
+    </div>
+
+    <!-- Top Gainers / Losers -->
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 24px;">
+      <div>
+        <div class="section-header">
+          <h2>Top Gainers (24h)</h2>
+        </div>
+        <div id="gainers-table" class="indicator-card" style="padding:0; overflow:hidden;">
+          <table class="data-table">
+            <thead>
+              <tr><th>#</th><th>Coin</th><th>Price</th><th>24h</th></tr>
+            </thead>
+            <tbody id="gainers-body">
+              <tr><td colspan="4" style="text-align:center;padding:20px;" class="text-muted">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div>
+        <div class="section-header">
+          <h2>Top Losers (24h)</h2>
+        </div>
+        <div id="losers-table" class="indicator-card" style="padding:0; overflow:hidden;">
+          <table class="data-table">
+            <thead>
+              <tr><th>#</th><th>Coin</th><th>Price</th><th>24h</th></tr>
+            </thead>
+            <tbody id="losers-body">
+              <tr><td colspan="4" style="text-align:center;padding:20px;" class="text-muted">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ===== Scripts ===== -->
+  <script src="js/api.js"></script>
+  <script src="js/indicators.js"></script>
+  <script src="js/composite.js"></script>
+  <script>
+    // ============================================================
+    // Dashboard Controller
+    // ============================================================
+
+    const SELL_ZONES = {
+      BTC: [
+        { label: "ATH Target", price: 126000 },
+        { label: "1.618 Fib", price: 167000 },
+      ],
+      ETH: [
+        { label: "Resistance 1", price: 4300 },
+        { label: "Resistance 2", price: 5000 },
+        { label: "1.618 Fib", price: 6900 },
+      ],
+    };
+
+    // --- Helpers ---
+    function formatPrice(val) {
+      if (val === null || val === undefined) return '--';
+      if (val >= 1000) return '$' + Number(val).toLocaleString('en-US', { maximumFractionDigits: 0 });
+      if (val >= 1) return '$' + Number(val).toLocaleString('en-US', { maximumFractionDigits: 2 });
+      return '$' + Number(val).toFixed(6);
+    }
+
+    function formatPct(val) {
+      if (val === null || val === undefined) return '--';
+      const sign = val >= 0 ? '+' : '';
+      return sign + Number(val).toFixed(2) + '%';
+    }
+
+    function formatLargeNumber(val) {
+      if (!val) return '--';
+      if (val >= 1e12) return '$' + (val / 1e12).toFixed(2) + 'T';
+      if (val >= 1e9) return '$' + (val / 1e9).toFixed(2) + 'B';
+      if (val >= 1e6) return '$' + (val / 1e6).toFixed(2) + 'M';
+      return '$' + Number(val).toLocaleString();
+    }
+
+    function setBadge(id, text, colorClass) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.textContent = text;
+      el.className = `status-badge status-badge--${colorClass}`;
+    }
+
+    function setCard(prefix, value, label, colorClass) {
+      const valEl = document.getElementById(`${prefix}-value`);
+      const labelEl = document.getElementById(`${prefix}-label`);
+      if (valEl) valEl.textContent = value;
+      if (labelEl) {
+        labelEl.textContent = label;
+        labelEl.style.color = colorClass === 'red' ? 'var(--accent-red)' :
+                              colorClass === 'green' ? 'var(--accent-green)' :
+                              colorClass === 'cyan' ? 'var(--accent-cyan)' :
+                              'var(--accent-gold)';
+      }
+    }
+
+    function setCardGlow(cardId, colorClass) {
+      const el = document.getElementById(cardId);
+      if (!el) return;
+      el.className = `indicator-card indicator-card--${colorClass}`;
+    }
+
+    function findNearestSellZone(current, zones) {
+      let nearest = null;
+      let minDist = Infinity;
+      for (const zone of zones) {
+        const dist = zone.price - current;
+        if (dist > 0 && dist < minDist) {
+          minDist = dist;
+          nearest = zone;
+        }
+      }
+      return nearest;
+    }
+
+    // --- Main Update ---
+    async function updateDashboard() {
+      try {
+        const data = await API.fetchAllDashboardData();
+        if (!data) return;
+
+        // === Top Bar Ticker ===
+        if (data.prices) {
+          const btc = data.prices.bitcoin;
+          const eth = data.prices.ethereum;
+
+          if (btc) {
+            document.getElementById('ticker-btc-price').textContent = formatPrice(btc.usd);
+            const btcChangeEl = document.getElementById('ticker-btc-change');
+            btcChangeEl.textContent = formatPct(btc.usd_24h_change);
+            btcChangeEl.className = `top-bar__change top-bar__change--${btc.usd_24h_change >= 0 ? 'up' : 'down'}`;
+          }
+
+          if (eth) {
+            document.getElementById('ticker-eth-price').textContent = formatPrice(eth.usd);
+            const ethChangeEl = document.getElementById('ticker-eth-change');
+            ethChangeEl.textContent = formatPct(eth.usd_24h_change);
+            ethChangeEl.className = `top-bar__change top-bar__change--${eth.usd_24h_change >= 0 ? 'up' : 'down'}`;
+          }
+        }
+
+        // === Fear & Greed ===
+        if (data.fearGreed && data.fearGreed[0]) {
+          const fng = data.fearGreed[0];
+          const zone = Indicators.fearGreedZone(fng.value);
+          setCard('fng', fng.value, zone.label, zone.color);
+          setBadge('fng-badge', zone.label, zone.color);
+          setCardGlow('card-fng', zone.color);
+          document.getElementById('ticker-fng').textContent = fng.value;
+          document.getElementById('ticker-fng').style.color =
+            zone.color === 'red' ? 'var(--accent-red)' :
+            zone.color === 'green' ? 'var(--accent-green)' : 'var(--accent-gold)';
+        }
+
+        // === BTC Dominance ===
+        if (data.global) {
+          const btcD = data.global.market_cap_percentage?.btc;
+          if (btcD !== undefined) {
+            const zone = Indicators.btcDominanceZone(btcD);
+            setCard('btcd', btcD.toFixed(1) + '%', zone.label, zone.color);
+            setBadge('btcd-badge', zone.label, zone.color);
+          }
+
+          // Total market cap
+          const totalMcap = data.global.total_market_cap?.usd;
+          if (totalMcap) {
+            document.getElementById('mcap-value').textContent = formatLargeNumber(totalMcap);
+            document.getElementById('mcap-label').textContent = 'Total crypto market';
+          }
+        }
+
+        // === ETH/BTC Ratio ===
+        if (data.ethBtcRatio) {
+          const zone = Indicators.ethBtcZone(data.ethBtcRatio);
+          setCard('ethbtc', data.ethBtcRatio.toFixed(5), zone.label, zone.color);
+          setBadge('ethbtc-badge', zone.label, zone.color);
+        }
+
+        // === Alt Season Index ===
+        if (data.altSeason) {
+          const zone = Indicators.altSeasonZone(data.altSeason.value);
+          setCard('altseason', data.altSeason.value + '/100', zone.label, zone.color);
+          setBadge('altseason-badge', zone.label, zone.color);
+        }
+
+        // === BTC Key Level ===
+        if (data.prices?.bitcoin) {
+          const btcPrice = data.prices.bitcoin.usd;
+          const nearestBtc = findNearestSellZone(btcPrice, SELL_ZONES.BTC);
+          if (nearestBtc) {
+            const pctAway = ((nearestBtc.price - btcPrice) / btcPrice * 100).toFixed(1);
+            setCard('btc-level', formatPrice(btcPrice), `${nearestBtc.label}: ${formatPrice(nearestBtc.price)} (${pctAway}% away)`, pctAway < 10 ? 'red' : 'yellow');
+            setBadge('btc-level-badge', pctAway < 5 ? 'NEAR' : pctAway < 20 ? 'WATCH' : 'FAR', pctAway < 5 ? 'red' : pctAway < 20 ? 'yellow' : 'green');
+          }
+
+          // ETH Key Level
+          if (data.prices.ethereum) {
+            const ethPrice = data.prices.ethereum.usd;
+            const nearestEth = findNearestSellZone(ethPrice, SELL_ZONES.ETH);
+            if (nearestEth) {
+              const pctAway = ((nearestEth.price - ethPrice) / ethPrice * 100).toFixed(1);
+              setCard('eth-level', formatPrice(ethPrice), `${nearestEth.label}: ${formatPrice(nearestEth.price)} (${pctAway}% away)`, pctAway < 10 ? 'red' : 'yellow');
+              setBadge('eth-level-badge', pctAway < 5 ? 'NEAR' : pctAway < 20 ? 'WATCH' : 'FAR', pctAway < 5 ? 'red' : pctAway < 20 ? 'yellow' : 'green');
+            }
+          }
+        }
+
+        // === MVRV, Pi Cycle, RSI (from BTC history) ===
+        let mvrvNorm = 50, piCycleVal = 20, rsiVal = 50;
+        try {
+          const btcHistory = await API.getBTCHistory(730);
+          if (btcHistory && btcHistory.prices) {
+            const closingPrices = btcHistory.prices.map(p => p[1]);
+
+            // RSI
+            const rsi = Indicators.RSI(closingPrices, 14);
+            if (rsi !== null) {
+              rsiVal = rsi;
+              const rsiColor = rsi > 70 ? 'red' : rsi < 30 ? 'green' : 'yellow';
+              const rsiLabel = rsi > 70 ? 'Overbought' : rsi < 30 ? 'Oversold' : 'Neutral';
+              setCard('rsi', rsi.toFixed(1), rsiLabel, rsiColor);
+              setBadge('rsi-badge', rsiLabel, rsiColor);
+              setCardGlow('card-rsi', rsiColor);
+            }
+
+            // Pi Cycle
+            const piCycle = Indicators.piCycleSignal(closingPrices);
+            piCycleVal = piCycle.value;
+            const piColor = piCycle.value >= 80 ? 'red' : piCycle.value >= 50 ? 'yellow' : 'green';
+            setCard('picycle', piCycle.ratio ? piCycle.ratio.toFixed(4) : '--', piCycle.signal, piColor);
+            setBadge('picycle-badge', piCycle.signal, piColor);
+            setCardGlow('card-picycle', piColor);
+
+            // Estimated MVRV
+            const estMvrv = Indicators.estimateMVRV(closingPrices);
+            if (estMvrv !== null) {
+              const mvrvZone = Indicators.mvrvZone(estMvrv);
+              mvrvNorm = mvrvZone.normalized;
+              setCard('mvrv', estMvrv.toFixed(2), mvrvZone.label + ' (est.)', mvrvZone.color);
+              setBadge('mvrv-badge', mvrvZone.label, mvrvZone.color);
+              setCardGlow('card-mvrv', mvrvZone.color);
+            }
+
+            // Puell (estimated from mining proxy)
+            const puellEst = closingPrices.length > 365
+              ? closingPrices[closingPrices.length - 1] / Indicators.SMA(closingPrices, 365)
+              : null;
+            if (puellEst !== null) {
+              const puellZone = Indicators.puellZone(puellEst);
+              setCard('puell', puellEst.toFixed(2), puellZone.label + ' (est.)', puellZone.color);
+              setBadge('puell-badge', puellZone.label, puellZone.color);
+              setCardGlow('card-puell', puellZone.color);
+            }
+          }
+        } catch (e) {
+          console.error('[Dashboard] Historical data error:', e);
+        }
+
+        // === Composite Score ===
+        const fngVal = data.fearGreed?.[0]?.value || 50;
+        const compositeScore = Composite.calculate(fngVal, mvrvNorm, piCycleVal, rsiVal);
+        Composite.renderGauge(document.getElementById('composite-gauge'), compositeScore);
+        document.getElementById('ticker-composite').textContent = compositeScore + '/100';
+        const compZone = Composite.getZone(compositeScore);
+        document.getElementById('ticker-composite').style.color = compZone.color;
+
+        // === Gainers / Losers ===
+        if (data.topCoins && data.topCoins.length > 0) {
+          const sorted = [...data.topCoins].sort((a, b) =>
+            (b.price_change_percentage_24h || 0) - (a.price_change_percentage_24h || 0)
+          );
+          const gainers = sorted.slice(0, 5);
+          const losers = sorted.slice(-5).reverse();
+
+          renderMoversTable('gainers-body', gainers);
+          renderMoversTable('losers-body', losers);
+        }
+
+        // === Timestamp ===
+        const now = new Date();
+        document.getElementById('ticker-updated').textContent =
+          'Updated: ' + now.toLocaleTimeString();
+
+      } catch (err) {
+        console.error('[Dashboard] Update failed:', err);
+      }
+    }
+
+    function renderMoversTable(tbodyId, coins) {
+      const tbody = document.getElementById(tbodyId);
+      if (!tbody) return;
+      tbody.innerHTML = coins.map((coin, i) => {
+        const change = coin.price_change_percentage_24h || 0;
+        const changeColor = change >= 0 ? 'var(--accent-green)' : 'var(--accent-red)';
+        return `<tr>
+          <td style="color:var(--text-muted)">${i + 1}</td>
+          <td>
+            <span style="color:var(--accent-gold);font-weight:600">${coin.symbol.toUpperCase()}</span>
+            <span style="color:var(--text-muted);font-size:0.7rem;margin-left:4px">${coin.name}</span>
+          </td>
+          <td>${formatPrice(coin.current_price)}</td>
+          <td style="color:${changeColor}">${formatPct(change)}</td>
+        </tr>`;
+      }).join('');
+    }
+
+    // --- Init ---
+    (async function init() {
+      await updateDashboard();
+      // Auto-refresh every 60 seconds
+      setInterval(updateDashboard, 60000);
+    })();
+  </script>
+</body>
+</html>

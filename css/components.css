@@ -1,0 +1,557 @@
+/* ============================================================
+   components.css — Reusable UI Components
+   Cards, gauges, progress bars, tabs, indicators
+   ============================================================ */
+
+/* --- Indicator Card --- */
+.indicator-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+  transition: all var(--transition);
+}
+
+.indicator-card:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-light);
+  transform: translateY(-1px);
+}
+
+/* Scanline sweep on hover */
+.indicator-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(240, 180, 41, 0.03),
+    transparent
+  );
+  transition: left 0.6s ease;
+  pointer-events: none;
+}
+
+.indicator-card:hover::before {
+  left: 100%;
+}
+
+.indicator-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.indicator-card__title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.indicator-card__value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+  line-height: 1.2;
+}
+
+.indicator-card__label {
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+
+.indicator-card__sparkline {
+  margin-top: 12px;
+  height: 32px;
+  width: 100%;
+}
+
+/* Glow variants */
+.indicator-card--green {
+  border-color: rgba(0, 255, 136, 0.15);
+  box-shadow: 0 0 20px rgba(0, 255, 136, 0.05);
+}
+
+.indicator-card--yellow {
+  border-color: rgba(240, 180, 41, 0.15);
+  box-shadow: 0 0 20px rgba(240, 180, 41, 0.05);
+}
+
+.indicator-card--red {
+  border-color: rgba(255, 68, 68, 0.15);
+  box-shadow: 0 0 20px rgba(255, 68, 68, 0.05);
+}
+
+/* --- Composite Gauge --- */
+.gauge-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.gauge-svg {
+  width: 220px;
+  height: 130px;
+}
+
+.gauge-arc-bg {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 12;
+  stroke-linecap: round;
+}
+
+.gauge-arc-fill {
+  fill: none;
+  stroke-width: 12;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1.5s ease-out, stroke 0.5s ease;
+}
+
+.gauge-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 2.4rem;
+  font-weight: 700;
+  fill: var(--text-primary);
+  text-anchor: middle;
+}
+
+.gauge-label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  fill: var(--text-muted);
+  text-anchor: middle;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.gauge-zone-label {
+  text-align: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin-top: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* --- Progress Bar (Sell Zones) --- */
+.progress-bar {
+  width: 100%;
+  height: 6px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-bar__fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 1s ease-out;
+  position: relative;
+}
+
+.progress-bar__fill--green {
+  background: linear-gradient(90deg, var(--accent-green), #00cc6a);
+}
+
+.progress-bar__fill--yellow {
+  background: linear-gradient(90deg, var(--accent-gold), #dda020);
+}
+
+.progress-bar__fill--orange {
+  background: linear-gradient(90deg, var(--accent-orange), #ff6600);
+}
+
+.progress-bar__fill--red {
+  background: linear-gradient(90deg, var(--accent-red), #cc0000);
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 8px rgba(255, 68, 68, 0.3); }
+  50% { box-shadow: 0 0 16px rgba(255, 68, 68, 0.6); }
+}
+
+/* --- Sell Zone Row --- */
+.sell-zone-row {
+  display: grid;
+  grid-template-columns: 80px 100px 1fr 80px 80px 80px;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 8px;
+  transition: all var(--transition);
+}
+
+.sell-zone-row:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-light);
+}
+
+.sell-zone-row__coin {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--accent-gold);
+}
+
+.sell-zone-row__label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.sell-zone-row__price {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.82rem;
+  color: var(--text-primary);
+}
+
+.sell-zone-row__multiple {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.82rem;
+  color: var(--accent-cyan);
+}
+
+.sell-zone-row__pct {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.82rem;
+}
+
+.in-zone-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 4px;
+  color: var(--accent-red);
+  background: rgba(255, 68, 68, 0.12);
+  border: 1px solid rgba(255, 68, 68, 0.3);
+  animation: flash 1.5s ease-in-out infinite;
+}
+
+@keyframes flash {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* --- Tabs --- */
+.tabs {
+  display: flex;
+  gap: 2px;
+  background: var(--bg-panel);
+  border-radius: var(--radius);
+  padding: 4px;
+  margin-bottom: 20px;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 10px 16px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: var(--text-muted);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.tab-btn:hover {
+  color: var(--text-primary);
+  background: var(--bg-card);
+}
+
+.tab-btn.active {
+  color: var(--accent-gold);
+  background: var(--bg-card);
+}
+
+.tab-panel {
+  display: none;
+}
+
+.tab-panel.active {
+  display: block;
+}
+
+/* --- News Card --- */
+.news-card {
+  padding: 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 8px;
+  transition: all var(--transition);
+}
+
+.news-card:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-light);
+}
+
+.news-card__source {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 6px;
+}
+
+.news-card__title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+
+.news-card__title a {
+  color: inherit;
+}
+
+.news-card__title a:hover {
+  color: var(--accent-cyan);
+}
+
+.news-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.news-card__sentiment {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 3px;
+  text-transform: uppercase;
+}
+
+.news-card__sentiment--bullish {
+  color: var(--accent-green);
+  background: rgba(0, 255, 136, 0.1);
+}
+
+.news-card__sentiment--bearish {
+  color: var(--accent-red);
+  background: rgba(255, 68, 68, 0.1);
+}
+
+.news-card__sentiment--neutral {
+  color: var(--text-muted);
+  background: var(--bg-panel);
+}
+
+/* --- Briefing Report --- */
+.briefing-section {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  margin-bottom: 16px;
+}
+
+.briefing-section h3 {
+  font-size: 0.95rem;
+  color: var(--accent-gold);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.briefing-section p,
+.briefing-section li {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+.briefing-section ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.briefing-section li::before {
+  content: '\25B8';
+  color: var(--accent-cyan);
+  margin-right: 8px;
+}
+
+/* --- Button --- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.btn:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-light);
+}
+
+.btn--primary {
+  background: var(--accent-gold);
+  color: #050508;
+  border-color: var(--accent-gold);
+}
+
+.btn--primary:hover {
+  background: #dda020;
+  border-color: #dda020;
+}
+
+.btn--loading {
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+/* --- Chart Container --- */
+.chart-panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.chart-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.chart-panel__title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.chart-panel__controls {
+  display: flex;
+  gap: 4px;
+}
+
+.chart-panel__controls button {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-muted);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.chart-panel__controls button:hover,
+.chart-panel__controls button.active {
+  color: var(--accent-gold);
+  border-color: var(--accent-gold);
+  background: rgba(240, 180, 41, 0.08);
+}
+
+.chart-panel__body {
+  height: 300px;
+  position: relative;
+}
+
+/* --- Table (for gainers/losers) --- */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table th {
+  text-align: left;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.data-table td {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.82rem;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-primary);
+}
+
+.data-table tr:hover td {
+  background: var(--bg-card-hover);
+}
+
+/* --- Empty State --- */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-muted);
+}
+
+.empty-state__icon {
+  font-size: 2.5rem;
+  margin-bottom: 12px;
+  opacity: 0.5;
+}
+
+.empty-state__text {
+  font-size: 0.9rem;
+}
+
+/* --- Count-up Animation Helper --- */
+.count-up {
+  display: inline-block;
+}
+
+/* --- Responsive sell zone rows --- */
+@media (max-width: 768px) {
+  .sell-zone-row {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+}

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>News - Crypto Intelligence Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="top-nav">
+    <div class="top-nav__inner">
+      <div class="top-nav__brand">
+        <div class="top-nav__brand-icon">CI</div>
+        <span>Crypto Intel</span>
+      </div>
+      <button class="nav-toggle" onclick="document.querySelector('.top-nav__links').classList.toggle('open')" aria-label="Toggle navigation">&#9776;</button>
+      <div class="top-nav__links">
+        <a href="index.html">Dashboard</a>
+        <a href="sell-zones.html">Sell Zones</a>
+        <a href="charts.html">Charts</a>
+        <a href="news.html" class="active">News</a>
+        <a href="briefing.html">Briefing</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="page-content">
+    <div class="section-header">
+      <h2>Market News</h2>
+      <span class="section-header__badge" id="news-update-badge">Refresh: 15min</span>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="crypto">Crypto News</button>
+      <button class="tab-btn" data-tab="macro">World &amp; Macro</button>
+    </div>
+
+    <!-- Crypto News Tab -->
+    <div class="tab-panel active" id="tab-crypto">
+      <div id="crypto-news-container">
+        <div class="empty-state loading-pulse">
+          <div class="empty-state__text">Loading crypto news...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Macro News Tab -->
+    <div class="tab-panel" id="tab-macro">
+      <div id="macro-news-container">
+        <div class="empty-state loading-pulse">
+          <div class="empty-state__text">Loading macro news...</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/news.js"></script>
+  <script>
+    // Tab switching
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+      });
+    });
+
+    // Load news
+    async function loadNews() {
+      try {
+        const articles = await News.fetchCryptoNews();
+        News.renderCryptoNews('crypto-news-container', articles);
+      } catch (err) {
+        console.error('[News] Load failed:', err);
+        document.getElementById('crypto-news-container').innerHTML =
+          '<div class="empty-state"><div class="empty-state__text">Failed to load news. Will retry in 15 minutes.</div></div>';
+      }
+      News.renderMacroNews('macro-news-container');
+    }
+
+    (async () => {
+      await loadNews();
+      // Refresh every 15 minutes
+      setInterval(loadNews, 15 * 60 * 1000);
+    })();
+  </script>
+</body>
+</html>
