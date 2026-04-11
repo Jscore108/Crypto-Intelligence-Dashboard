@@ -49,44 +49,7 @@ body {
   overflow-x: hidden;
 }
 
-/* Animated ambient light background */
-body::before {
-  content: '';
-  position: fixed;
-  top: 0; left: 0; width: 100%; height: 100%;
-  pointer-events: none;
-  z-index: 0;
-  background:
-    radial-gradient(ellipse at 20% 50%, rgba(0, 240, 255, 0.05) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 20%, rgba(191, 90, 242, 0.05) 0%, transparent 50%),
-    radial-gradient(ellipse at 50% 80%, rgba(0, 255, 136, 0.03) 0%, transparent 50%);
-  animation: bgShift 20s ease-in-out infinite;
-}
-
-@keyframes bgShift {
-  0%, 100% { opacity: 1; }
-  33% { opacity: 0.6; }
-  66% { opacity: 0.85; }
-}
-
-/* Animated grid overlay */
-body::after {
-  content: '';
-  position: fixed;
-  top: 0; left: 0; width: 200%; height: 200%;
-  pointer-events: none;
-  z-index: 0;
-  background-image:
-    linear-gradient(rgba(0, 240, 255, 0.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 240, 255, 0.02) 1px, transparent 1px);
-  background-size: 60px 60px;
-  animation: gridMove 25s linear infinite;
-}
-
-@keyframes gridMove {
-  0% { transform: translate(0, 0); }
-  100% { transform: translate(-60px, -60px); }
-}
+/* Background handled by background.css */
 
 nav, main, .top-bar, .top-nav { position: relative; z-index: 1; }
 
