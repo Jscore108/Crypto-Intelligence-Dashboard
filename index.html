@@ -328,87 +328,6 @@
       return nearest;
     }
 
-    // --- Render UI from data (no fetching) ---
-    function renderDashboard(data) {
-      // === Top Bar Ticker ===
-      if (data.prices) {
-        const btc = data.prices.bitcoin;
-        const eth = data.prices.ethereum;
-        if (btc) {
-          document.getElementById('ticker-btc-price').textContent = formatPrice(btc.usd);
-          const btcChangeEl = document.getElementById('ticker-btc-change');
-          btcChangeEl.textContent = formatPct(btc.usd_24h_change);
-          btcChangeEl.className = `top-bar__change top-bar__change--${btc.usd_24h_change >= 0 ? 'up' : 'down'}`;
-        }
-        if (eth) {
-          document.getElementById('ticker-eth-price').textContent = formatPrice(eth.usd);
-          const ethChangeEl = document.getElementById('ticker-eth-change');
-          ethChangeEl.textContent = formatPct(eth.usd_24h_change);
-          ethChangeEl.className = `top-bar__change top-bar__change--${eth.usd_24h_change >= 0 ? 'up' : 'down'}`;
-        }
-      }
-
-      // === Fear & Greed ===
-      if (data.fearGreed && data.fearGreed[0]) {
-        const fng = data.fearGreed[0];
-        const zone = Indicators.fearGreedZone(fng.value);
-        setCard('fng', fng.value, zone.label, zone.color);
-        setBadge('fng-badge', zone.label, zone.color);
-        setCardGlow('card-fng', zone.color);
-        document.getElementById('ticker-fng').textContent = fng.value;
-        document.getElementById('ticker-fng').style.color =
-          zone.color === 'red' ? 'var(--accent-red)' :
-          zone.color === 'green' ? 'var(--accent-green)' : 'var(--accent-gold)';
-      }
-
-      // === BTC Dominance ===
-      if (data.global) {
-        const btcD = data.global.market_cap_percentage?.btc;
-        if (btcD !== undefined) {
-          const zone = Indicators.btcDominanceZone(btcD);
-          setCard('btcd', btcD.toFixed(1) + '%', zone.label, zone.color);
-          setBadge('btcd-badge', zone.label, zone.color);
-        }
-        const totalMcap = data.global.total_market_cap?.usd;
-        if (totalMcap) {
-          document.getElementById('mcap-value').textContent = formatLargeNumber(totalMcap);
-          document.getElementById('mcap-label').textContent = 'Total crypto market';
-        }
-      }
-
-      // === ETH/BTC Ratio ===
-      if (data.ethBtcRatio) {
-        const zone = Indicators.ethBtcZone(data.ethBtcRatio);
-        setCard('ethbtc', data.ethBtcRatio.toFixed(5), zone.label, zone.color);
-        setBadge('ethbtc-badge', zone.label, zone.color);
-      }
-
-      // === Alt Season Index ===
-      if (data.altSeason) {
-        const zone = Indicators.altSeasonZone(data.altSeason.value);
-        setCard('altseason', data.altSeason.value + '/100', zone.label, zone.color);
-        setBadge('altseason-badge', zone.label, zone.color);
-      }
-
-      // === Sell Targets: Current vs Target for all coins ===
-      if (data.prices) {
-        renderSellTargets(data.prices);
-      }
-
-      // === Gainers / Losers ===
-      if (data.topCoins && data.topCoins.length > 0) {
-        const sorted = [...data.topCoins].sort((a, b) =>
-          (b.price_change_percentage_24h || 0) - (a.price_change_percentage_24h || 0)
-        );
-        renderMoversTable('gainers-body', sorted.slice(0, 5));
-        renderMoversTable('losers-body', sorted.slice(-5).reverse());
-      }
-
-      // === Timestamp ===
-      document.getElementById('ticker-updated').textContent =
-        'Updated: ' + new Date().toLocaleTimeString();
-    }
-
     // --- Render indicators from BTC history (heavy, runs in background) ---
     function renderIndicators(closingPrices, fngVal) {
       let mvrvNorm = 50, piCycleVal = 20, rsiVal = 50;
@@ -575,20 +494,93 @@
       }).join('');
     }
 
-    // --- Main Update (progressive: fast data first, heavy indicators in background) ---
+    // --- Main Update: render each data piece the instant it arrives ---
     async function updateDashboard() {
       try {
-        // Phase 1: Fetch fast data and render immediately
-        const data = await API.fetchAllDashboardData();
-        if (data) renderDashboard(data);
-
-        // Phase 2: Fetch BTC history in background for indicators
-        const fngVal = data?.fearGreed?.[0]?.value || 50;
-        API.getBTCHistory(365).then(btcHistory => {
-          if (btcHistory?.prices) {
-            renderIndicators(btcHistory.prices.map(p => p[1]), fngVal);
+        // Fire ALL requests simultaneously, render as each resolves
+        const pricesP = API.getPrices().then(prices => {
+          if (!prices) return;
+          // Ticker
+          const btc = prices.bitcoin, eth = prices.ethereum;
+          if (btc) {
+            document.getElementById('ticker-btc-price').textContent = formatPrice(btc.usd);
+            const el = document.getElementById('ticker-btc-change');
+            el.textContent = formatPct(btc.usd_24h_change);
+            el.className = `top-bar__change top-bar__change--${btc.usd_24h_change >= 0 ? 'up' : 'down'}`;
           }
+          if (eth) {
+            document.getElementById('ticker-eth-price').textContent = formatPrice(eth.usd);
+            const el = document.getElementById('ticker-eth-change');
+            el.textContent = formatPct(eth.usd_24h_change);
+            el.className = `top-bar__change top-bar__change--${eth.usd_24h_change >= 0 ? 'up' : 'down'}`;
+          }
+          // Sell targets
+          renderSellTargets(prices);
+          return prices;
+        }).catch(() => null);
+
+        API.getFearGreed().then(fg => {
+          if (!fg || !fg[0]) return;
+          const fng = fg[0];
+          const zone = Indicators.fearGreedZone(fng.value);
+          setCard('fng', fng.value, zone.label, zone.color);
+          setBadge('fng-badge', zone.label, zone.color);
+          setCardGlow('card-fng', zone.color);
+          document.getElementById('ticker-fng').textContent = fng.value;
+          document.getElementById('ticker-fng').style.color =
+            zone.color === 'red' ? 'var(--accent-red)' :
+            zone.color === 'green' ? 'var(--accent-green)' : 'var(--accent-gold)';
+        }).catch(() => {});
+
+        API.getGlobalData().then(global => {
+          if (!global) return;
+          const btcD = global.market_cap_percentage?.btc;
+          if (btcD !== undefined) {
+            const zone = Indicators.btcDominanceZone(btcD);
+            setCard('btcd', btcD.toFixed(1) + '%', zone.label, zone.color);
+            setBadge('btcd-badge', zone.label, zone.color);
+          }
+        }).catch(() => {});
+
+        API.getETHBTCRatio().then(ratio => {
+          if (!ratio) return;
+          const zone = Indicators.ethBtcZone(ratio);
+          setCard('ethbtc', ratio.toFixed(5), zone.label, zone.color);
+          setBadge('ethbtc-badge', zone.label, zone.color);
+        }).catch(() => {});
+
+        API.getTopCoins(50).then(coins => {
+          if (!coins || coins.length === 0) return;
+          // Alt season
+          const btc = coins.find(c => c.id === 'bitcoin');
+          if (btc) {
+            const btcChange = btc.price_change_percentage_24h || 0;
+            const alts = coins.filter(c => c.id !== 'bitcoin');
+            let outperform = 0;
+            alts.forEach(c => { if ((c.price_change_percentage_24h || 0) > btcChange) outperform++; });
+            const idx = Math.round((outperform / alts.length) * 100);
+            const zone = Indicators.altSeasonZone(idx);
+            setCard('altseason', idx + '/100', zone.label, zone.color);
+            setBadge('altseason-badge', zone.label, zone.color);
+          }
+          // Gainers / Losers
+          const sorted = [...coins].sort((a, b) => (b.price_change_percentage_24h || 0) - (a.price_change_percentage_24h || 0));
+          renderMoversTable('gainers-body', sorted.slice(0, 5));
+          renderMoversTable('losers-body', sorted.slice(-5).reverse());
+        }).catch(() => {});
+
+        // BTC history for indicators (heaviest call)
+        API.getBTCHistory(365).then(btcHistory => {
+          if (!btcHistory?.prices) return;
+          // Wait for fear & greed to be available
+          return API.getFearGreed().then(fg => {
+            const fngVal = fg?.[0]?.value || 50;
+            renderIndicators(btcHistory.prices.map(p => p[1]), fngVal);
+          });
         }).catch(e => console.error('[Dashboard] Indicator error:', e));
+
+        // Timestamp
+        document.getElementById('ticker-updated').textContent = 'Updated: ' + new Date().toLocaleTimeString();
 
       } catch (err) {
         console.error('[Dashboard] Update failed:', err);
