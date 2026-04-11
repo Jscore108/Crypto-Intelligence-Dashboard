@@ -274,7 +274,7 @@
       { name: 'Fear & Greed', sellAbove: 75, label: '> 75 = Sell Zone' },
       { name: 'MVRV Z-Score', sellAbove: 7, label: '> 7 = Sell Zone' },
       { name: 'Puell Multiple', sellAbove: 2, label: '> 2 = Sell Zone' },
-      { name: 'RSI (14)', sellAbove: 70, label: '> 70 = Overbought' },
+      { name: 'BTC Dominance', sellAbove: 65, label: '> 65% = Sell Signal' },
       { name: 'Pi Cycle', sellAbove: 1.0, label: 'Ratio >= 1.0 = Top' },
     ];
 
@@ -340,12 +340,12 @@
     }
 
     // --- Render indicators from BTC history (heavy, runs in background) ---
-    function renderIndicators(closingPrices, fngVal) {
-      let mvrvNorm = 50, piCycleVal = 20, rsiVal = 50;
+    function renderIndicators(closingPrices, fngVal, btcDominance) {
+      let mvrvNorm = 50, piCycleVal = 20;
 
+      // RSI (still shown as indicator card, just not in composite)
       const rsi = Indicators.RSI(closingPrices, 14);
       if (rsi !== null) {
-        rsiVal = rsi;
         const rsiColor = rsi > 70 ? 'red' : rsi < 30 ? 'green' : 'yellow';
         const rsiLabel = rsi > 70 ? 'Overbought' : rsi < 30 ? 'Oversold' : 'Neutral';
         setCard('rsi', rsi.toFixed(1), rsiLabel, rsiColor);
@@ -353,6 +353,7 @@
         setCardGlow('card-rsi', rsiColor);
       }
 
+      // Pi Cycle Top Indicator
       const piCycle = Indicators.piCycleSignal(closingPrices);
       piCycleVal = piCycle.value;
       const piColor = piCycle.value >= 80 ? 'red' : piCycle.value >= 50 ? 'yellow' : 'green';
@@ -360,6 +361,7 @@
       setBadge('picycle-badge', piCycle.signal, piColor);
       setCardGlow('card-picycle', piColor);
 
+      // MVRV Z-Score (estimated)
       const estMvrv = Indicators.estimateMVRV(closingPrices);
       if (estMvrv !== null) {
         const mvrvZone = Indicators.mvrvZone(estMvrv);
@@ -369,6 +371,7 @@
         setCardGlow('card-mvrv', mvrvZone.color);
       }
 
+      // Puell Multiple (estimated)
       const puellEst = closingPrices.length > 365
         ? closingPrices[closingPrices.length - 1] / Indicators.SMA(closingPrices, 365)
         : null;
@@ -379,21 +382,25 @@
         setCardGlow('card-puell', puellZone.color);
       }
 
-      // Composite Score
-      const rsiNorm = Math.max(0, Math.min(100, ((rsiVal - 30) / 40) * 100));
-      const compositeScore = Composite.calculate(fngVal, mvrvNorm, piCycleVal, rsiVal);
+      // --- Composite Score ---
+      // Uses: Fear & Greed (25%), MVRV (30%), Pi Cycle Top (25%), BTC Dominance (20%)
+      const btcD = Number(btcDominance) || 50;
+      const compositeScore = Composite.calculate(fngVal, mvrvNorm, piCycleVal, btcD);
       Composite.renderGauge(document.getElementById('composite-gauge'), compositeScore);
       document.getElementById('ticker-composite').textContent = compositeScore + '/100';
       const compZone = Composite.getZone(compositeScore);
       document.getElementById('ticker-composite').style.color = compZone.color;
 
-      // Render breakdown
+      // BTC Dominance normalized for breakdown display: map [40, 70] to [0, 100]
+      const btcDNorm = Math.max(0, Math.min(100, ((btcD - 40) / 30) * 100));
       const fngNorm = Math.max(0, Math.min(100, Number(fngVal) || 50));
+
+      // Render breakdown
       renderCompositeBreakdown({
         'Fear & Greed': { value: fngNorm, weight: 25, raw: fngVal, contribution: (fngNorm * 0.25).toFixed(1) },
         'MVRV Z-Score': { value: mvrvNorm, weight: 30, raw: estMvrv !== null ? estMvrv.toFixed(2) : '--', contribution: (mvrvNorm * 0.30).toFixed(1) },
-        'Pi Cycle': { value: piCycleVal, weight: 25, raw: piCycle?.ratio ? piCycle.ratio.toFixed(4) : '--', contribution: (piCycleVal * 0.25).toFixed(1) },
-        'RSI (14)': { value: rsiNorm, weight: 20, raw: rsiVal.toFixed(1), contribution: (rsiNorm * 0.20).toFixed(1) },
+        'Pi Cycle Top': { value: piCycleVal, weight: 25, raw: piCycle?.ratio ? piCycle.ratio.toFixed(4) : '--', contribution: (piCycleVal * 0.25).toFixed(1) },
+        'BTC.D': { value: btcDNorm, weight: 20, raw: btcD.toFixed(1) + '%', contribution: (btcDNorm * 0.20).toFixed(1) },
       }, compositeScore);
 
       // Update indicator sell levels card
@@ -401,7 +408,7 @@
         'Fear & Greed': fngVal ? Number(fngVal) : null,
         'MVRV Z-Score': estMvrv !== null ? estMvrv : null,
         'Puell Multiple': puellEst,
-        'RSI (14)': rsiVal,
+        'BTC Dominance': btcD,
         'Pi Cycle': piCycle?.ratio || null,
       });
     }
@@ -623,13 +630,16 @@
         }).catch(() => {});
 
         // BTC history for indicators (heaviest call)
-        API.getBTCHistory(365).then(btcHistory => {
+        // Needs Fear & Greed + BTC Dominance for composite
+        Promise.all([
+          API.getBTCHistory(365),
+          API.getFearGreed(),
+          API.getGlobalData(),
+        ]).then(([btcHistory, fg, global]) => {
           if (!btcHistory?.prices) return;
-          // Wait for fear & greed to be available
-          return API.getFearGreed().then(fg => {
-            const fngVal = fg?.[0]?.value || 50;
-            renderIndicators(btcHistory.prices.map(p => p[1]), fngVal);
-          });
+          const fngVal = fg?.[0]?.value || 50;
+          const btcD = global?.market_cap_percentage?.btc || 50;
+          renderIndicators(btcHistory.prices.map(p => p[1]), fngVal, btcD);
         }).catch(e => console.error('[Dashboard] Indicator error:', e));
 
         // Timestamp

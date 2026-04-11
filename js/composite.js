@@ -10,8 +10,11 @@ const Composite = (() => {
    * Formula:
    *   Fear_Greed_normalized * 0.25 +
    *   MVRV_normalized * 0.30 +
-   *   PiCycle_signal * 0.25 +
-   *   RSI_14_BTC_normalized * 0.20
+   *   PiCycle_top_signal * 0.25 +
+   *   BTC_Dominance_normalized * 0.20
+   *
+   * BTC Dominance: >65% = sell signal (maps to high score)
+   *   Normalized: map [40%, 70%] to [0, 100]
    *
    * Returns 0-100 where:
    *   0-40 = Accumulate (green)
@@ -19,21 +22,21 @@ const Composite = (() => {
    *   60-80 = Distribute (orange)
    *   80-100 = SELL (red)
    */
-  function calculate(fearGreed, mvrvNormalized, piCycleValue, rsi14) {
-    // Normalize all inputs to 0-100
+  function calculate(fearGreed, mvrvNormalized, piCycleValue, btcDominance) {
     const fng = clamp(Number(fearGreed) || 50, 0, 100);
     const mvrv = clamp(Number(mvrvNormalized) || 50, 0, 100);
     const piCycle = clamp(Number(piCycleValue) || 20, 0, 100);
-    const rsi = clamp(Number(rsi14) || 50, 0, 100);
 
-    // RSI normalize: map 30-70 to 0-100
-    const rsiNorm = clamp(((rsi - 30) / 40) * 100, 0, 100);
+    // BTC Dominance normalize: map [40, 70] to [0, 100]
+    // >65% is danger zone, so higher dominance = higher score
+    const btcD = clamp(Number(btcDominance) || 50, 0, 100);
+    const btcDNorm = clamp(((btcD - 40) / 30) * 100, 0, 100);
 
     const score = (
       fng * 0.25 +
       mvrv * 0.30 +
       piCycle * 0.25 +
-      rsiNorm * 0.20
+      btcDNorm * 0.20
     );
 
     return Math.round(clamp(score, 0, 100));
