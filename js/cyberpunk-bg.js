@@ -156,76 +156,136 @@
 
   // --- Draw Spaceships ---
   function drawShips() {
-    // Spawn new ship occasionally
     if (Math.random() < 0.002 && ships.length < 3) {
       const fromLeft = Math.random() > 0.5;
       const nc = NEON[NEON_KEYS[Math.floor(Math.random() * NEON_KEYS.length)]];
       ships.push({
-        x: fromLeft ? -60 : W + 60,
-        y: H * 0.15 + Math.random() * H * 0.45,
-        vx: fromLeft ? (1.5 + Math.random() * 2.5) : -(1.5 + Math.random() * 2.5),
-        size: 8 + Math.random() * 12,
+        x: fromLeft ? -80 : W + 80,
+        y: H * 0.12 + Math.random() * H * 0.45,
+        vx: fromLeft ? (1.2 + Math.random() * 2) : -(1.2 + Math.random() * 2),
+        size: 18 + Math.random() * 18,
         color: nc,
         trail: [],
+        wobble: Math.random() * 6.28,
       });
     }
 
     ships = ships.filter(s => {
-      // Engine trail
-      s.trail.push({ x: s.x, y: s.y, life: 20 });
+      const dir = s.vx > 0 ? 1 : -1;
+      const sz = s.size;
+      const wobbleY = Math.sin(frame * 0.015 + s.wobble) * 1.5;
+
+      // Engine trail particles
+      s.trail.push({ x: s.x - dir * sz * 1.1, y: s.y + wobbleY, life: 30 });
       s.trail = s.trail.filter(t => {
         t.life--;
-        const a = t.life / 20;
-        ctx.beginPath(); ctx.arc(t.x, t.y, 2 * a, 0, 6.28);
-        ctx.fillStyle = `rgba(${s.color[0]},${s.color[1]},${s.color[2]},${0.3 * a})`;
+        const a = t.life / 30;
+        ctx.beginPath(); ctx.arc(t.x - dir * a * 8, t.y + (Math.random() - 0.5) * 2, 2.5 * a, 0, 6.28);
+        ctx.fillStyle = `rgba(${s.color[0]},${s.color[1]},${s.color[2]},${0.25 * a})`;
         ctx.fill();
         return t.life > 0;
       });
 
-      const dir = s.vx > 0 ? 1 : -1;
-
-      // Ship body — sleek triangle
       ctx.save();
-      ctx.translate(s.x, s.y);
+      ctx.translate(s.x, s.y + wobbleY);
 
-      // Engine glow
-      ctx.beginPath();
-      ctx.arc(-dir * s.size * 0.8, 0, s.size * 0.5, 0, 6.28);
-      ctx.fillStyle = `rgba(${s.color[0]},${s.color[1]},${s.color[2]},0.08)`;
+      // Ambient engine glow
+      ctx.beginPath(); ctx.arc(-dir * sz * 0.9, 0, sz * 0.7, 0, 6.28);
+      ctx.fillStyle = `rgba(${s.color[0]},${s.color[1]},${s.color[2]},0.06)`;
       ctx.fill();
 
-      // Hull
+      // Main hull — elongated fuselage
       ctx.beginPath();
-      ctx.moveTo(dir * s.size, 0);
-      ctx.lineTo(-dir * s.size * 0.5, -s.size * 0.35);
-      ctx.lineTo(-dir * s.size * 0.7, 0);
-      ctx.lineTo(-dir * s.size * 0.5, s.size * 0.35);
+      ctx.moveTo(dir * sz * 1.3, 0);                     // nose
+      ctx.lineTo(dir * sz * 0.6, -sz * 0.12);            // upper nose taper
+      ctx.lineTo(-dir * sz * 0.3, -sz * 0.18);           // upper body
+      ctx.lineTo(-dir * sz * 0.9, -sz * 0.15);           // rear upper
+      ctx.lineTo(-dir * sz * 1.0, 0);                    // rear center
+      ctx.lineTo(-dir * sz * 0.9, sz * 0.15);            // rear lower
+      ctx.lineTo(-dir * sz * 0.3, sz * 0.18);            // lower body
+      ctx.lineTo(dir * sz * 0.6, sz * 0.12);             // lower nose taper
       ctx.closePath();
-      ctx.fillStyle = `rgba(${Math.min(255, s.color[0] + 40)},${Math.min(255, s.color[1] + 40)},${Math.min(255, s.color[2] + 40)},0.6)`;
+      ctx.fillStyle = `rgba(20, 28, 50, 0.8)`;
       ctx.fill();
-      ctx.strokeStyle = `rgba(${s.color[0]},${s.color[1]},${s.color[2]},0.8)`;
-      ctx.lineWidth = 1;
+      ctx.strokeStyle = `rgba(${s.color[0]},${s.color[1]},${s.color[2]},0.5)`;
+      ctx.lineWidth = 0.8;
       ctx.stroke();
 
-      // Cockpit
+      // Top wing
       ctx.beginPath();
-      ctx.arc(dir * s.size * 0.3, 0, s.size * 0.12, 0, 6.28);
-      ctx.fillStyle = `rgba(${s.color[0]},${s.color[1]},${s.color[2]},0.9)`;
+      ctx.moveTo(-dir * sz * 0.1, -sz * 0.18);
+      ctx.lineTo(-dir * sz * 0.5, -sz * 0.55);
+      ctx.lineTo(-dir * sz * 0.8, -sz * 0.5);
+      ctx.lineTo(-dir * sz * 0.7, -sz * 0.15);
+      ctx.closePath();
+      ctx.fillStyle = `rgba(15, 22, 42, 0.85)`;
+      ctx.fill();
+      ctx.strokeStyle = `rgba(${s.color[0]},${s.color[1]},${s.color[2]},0.4)`;
+      ctx.lineWidth = 0.6;
+      ctx.stroke();
+
+      // Bottom wing
+      ctx.beginPath();
+      ctx.moveTo(-dir * sz * 0.1, sz * 0.18);
+      ctx.lineTo(-dir * sz * 0.5, sz * 0.55);
+      ctx.lineTo(-dir * sz * 0.8, sz * 0.5);
+      ctx.lineTo(-dir * sz * 0.7, sz * 0.15);
+      ctx.closePath();
+      ctx.fillStyle = `rgba(15, 22, 42, 0.85)`;
+      ctx.fill();
+      ctx.strokeStyle = `rgba(${s.color[0]},${s.color[1]},${s.color[2]},0.4)`;
+      ctx.lineWidth = 0.6;
+      ctx.stroke();
+
+      // Wing tip lights
+      ctx.beginPath(); ctx.arc(-dir * sz * 0.5, -sz * 0.55, 1.5, 0, 6.28);
+      ctx.fillStyle = `rgba(${s.color[0]},${s.color[1]},${s.color[2]},0.9)`; ctx.fill();
+      ctx.beginPath(); ctx.arc(-dir * sz * 0.5, sz * 0.55, 1.5, 0, 6.28);
+      ctx.fillStyle = `rgba(255, 42, 109, 0.9)`; ctx.fill();
+
+      // Hull panel line
+      ctx.beginPath();
+      ctx.moveTo(dir * sz * 0.5, 0);
+      ctx.lineTo(-dir * sz * 0.8, 0);
+      ctx.strokeStyle = `rgba(${s.color[0]},${s.color[1]},${s.color[2]},0.15)`;
+      ctx.lineWidth = 0.5;
+      ctx.stroke();
+
+      // Cockpit window
+      ctx.beginPath();
+      ctx.ellipse(dir * sz * 0.7, 0, sz * 0.12, sz * 0.06, 0, 0, 6.28);
+      ctx.fillStyle = `rgba(${s.color[0]},${s.color[1]},${s.color[2]},0.85)`;
+      ctx.fill();
+      ctx.beginPath();
+      ctx.ellipse(dir * sz * 0.7, 0, sz * 0.18, sz * 0.09, 0, 0, 6.28);
+      ctx.fillStyle = `rgba(${s.color[0]},${s.color[1]},${s.color[2]},0.12)`;
       ctx.fill();
 
-      // Engine exhaust
-      const exLen = s.size * (0.4 + 0.3 * Math.sin(frame * 0.3));
+      // Engine exhaust — dual flames
+      const exFlicker = 0.6 + 0.4 * Math.sin(frame * 0.4 + s.wobble);
+      const exLen = sz * (0.5 + 0.4 * exFlicker);
+      // Top engine
       ctx.beginPath();
-      ctx.moveTo(-dir * s.size * 0.7, -s.size * 0.1);
-      ctx.lineTo(-dir * (s.size * 0.7 + exLen), 0);
-      ctx.lineTo(-dir * s.size * 0.7, s.size * 0.1);
-      ctx.fillStyle = `rgba(${s.color[0]},${s.color[1]},${s.color[2]},${0.5 + 0.3 * Math.sin(frame * 0.5)})`;
+      ctx.moveTo(-dir * sz * 0.9, -sz * 0.08);
+      ctx.lineTo(-dir * (sz * 0.9 + exLen * 0.8), -sz * 0.02);
+      ctx.lineTo(-dir * sz * 0.9, sz * 0.02);
+      ctx.fillStyle = `rgba(${s.color[0]},${s.color[1]},${s.color[2]},${0.35 * exFlicker})`;
       ctx.fill();
+      // Bottom engine
+      ctx.beginPath();
+      ctx.moveTo(-dir * sz * 0.9, sz * 0.02);
+      ctx.lineTo(-dir * (sz * 0.9 + exLen), sz * 0.05);
+      ctx.lineTo(-dir * sz * 0.9, sz * 0.12);
+      ctx.fillStyle = `rgba(${s.color[0]},${s.color[1]},${s.color[2]},${0.4 * exFlicker})`;
+      ctx.fill();
+      // Core bright center
+      ctx.beginPath(); ctx.arc(-dir * sz * 0.95, sz * 0.02, sz * 0.05, 0, 6.28);
+      ctx.fillStyle = `rgba(255,255,255,${0.4 * exFlicker})`; ctx.fill();
 
       ctx.restore();
 
       s.x += s.vx;
-      return s.x > -100 && s.x < W + 100;
+      return s.x > -120 && s.x < W + 120;
     });
   }
 
