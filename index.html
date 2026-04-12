@@ -126,7 +126,7 @@
         <div class="hex-bubble__inner">
           <div class="hex-bubble__label">BTC.D</div>
           <div class="hex-bubble__value" id="btcd-value">--</div>
-          <div class="hex-bubble__target">sell @ 65%</div>
+          <div class="hex-bubble__target">alt season @ 45%</div>
           <div class="hex-bubble__pct" id="btcd-pct"></div>
         </div>
       </div>
@@ -160,7 +160,8 @@
         <div class="hex-bubble__inner">
           <div class="hex-bubble__label">ETH/BTC</div>
           <div class="hex-bubble__value" id="ethbtc-value">--</div>
-          <div class="hex-bubble__badge" id="ethbtc-badge">--</div>
+          <div class="hex-bubble__target">cycle top @ 0.083</div>
+          <div class="hex-bubble__pct" id="ethbtc-pct"></div>
         </div>
       </div>
     </div>
@@ -380,7 +381,7 @@
       { name: 'Fear & Greed', sellAbove: 75, label: '> 75 = Sell Zone' },
       { name: 'MVRV Z-Score', sellAbove: 5, label: '> 5 = Cycle Top' },
       { name: 'Puell Multiple', sellAbove: 2, label: '> 2 = Sell Zone' },
-      { name: 'BTC Dominance', sellAbove: 65, label: '> 65% = Sell Signal' },
+      { name: 'BTC Dominance', sellAbove: 45, label: '< 45% = Alt Season' },
       { name: 'Pi Cycle', sellAbove: 1.0, label: 'Ratio >= 1.0 = Top' },
     ];
 
@@ -515,7 +516,7 @@
         fng: { value: Number(fngVal) || 0, target: 75 },
         mvrv: { value: estMvrv, target: 7 },
         puell: { value: puellEst, target: 2 },
-        btcd: { value: btcD, target: 65 },
+        btcd: { value: btcD, target: 45 },
         picycle: { value: piCycle?.ratio || 0, target: 1.0 },
       });
     }
@@ -751,19 +752,31 @@
           if (!ratio) return;
           const zone = Indicators.ethBtcZone(ratio);
           setCard('ethbtc', ratio.toFixed(5), zone.label, zone.color);
-          setBadge('ethbtc-badge', zone.label, zone.color);
+          // ETH/BTC progress toward 0.083 cycle top
+          const ethbtcTarget = 0.083;
+          const ethbtcPct = Math.round((ratio / ethbtcTarget) * 100);
+          const pctEl = document.getElementById('ethbtc-pct');
+          if (pctEl) {
+            pctEl.textContent = ethbtcPct + '% to top';
+            pctEl.style.color = ethbtcPct > 80 ? 'var(--accent-red)' : ethbtcPct > 50 ? 'var(--accent-gold)' : 'var(--accent-neon-green)';
+          }
         }).catch(() => {});
 
         API.getTopCoins(50).then(coins => {
           if (!coins || coins.length === 0) return;
-          // Alt season
+          // Alt season — use 7d change for more accurate reading
           const btc = coins.find(c => c.id === 'bitcoin');
           if (btc) {
-            const btcChange = btc.price_change_percentage_24h || 0;
-            const alts = coins.filter(c => c.id !== 'bitcoin');
+            const btcChange7d = btc.price_change_percentage_7d_in_currency || btc.price_change_percentage_24h || 0;
+            const alts = coins.filter(c => c.id !== 'bitcoin' && c.id !== 'tether' && c.id !== 'usd-coin' && c.id !== 'staked-ether');
             let outperform = 0;
-            alts.forEach(c => { if ((c.price_change_percentage_24h || 0) > btcChange) outperform++; });
-            const idx = Math.round((outperform / alts.length) * 100);
+            alts.forEach(c => {
+              const altChange = c.price_change_percentage_7d_in_currency || c.price_change_percentage_24h || 0;
+              if (altChange > btcChange7d) outperform++;
+            });
+            // Scale down slightly — 24h/7d is noisier than 90d
+            const rawIdx = Math.round((outperform / alts.length) * 100);
+            const idx = Math.round(rawIdx * 0.65);
             const zone = Indicators.altSeasonZone(idx);
             setCard('altseason', idx + '/100', zone.label, zone.color);
             setBadge('altseason-badge', zone.label, zone.color);
