@@ -155,16 +155,16 @@
     });
   }
 
-  // --- Draw Spaceships ---
+  // --- Draw Spaceships — flat wide starfighters ---
   function drawShips() {
     if (Math.random() < 0.002 && ships.length < 3) {
       const fromLeft = Math.random() > 0.5;
       const nc = NEON[NEON_KEYS[Math.floor(Math.random() * NEON_KEYS.length)]];
       ships.push({
-        x: fromLeft ? -80 : W + 80,
-        y: H * 0.12 + Math.random() * H * 0.45,
-        vx: fromLeft ? (1.2 + Math.random() * 2) : -(1.2 + Math.random() * 2),
-        size: 18 + Math.random() * 18,
+        x: fromLeft ? -100 : W + 100,
+        y: H * 0.1 + Math.random() * H * 0.45,
+        vx: fromLeft ? (1 + Math.random() * 1.8) : -(1 + Math.random() * 1.8),
+        size: 22 + Math.random() * 20,
         color: nc,
         trail: [],
         wobble: Math.random() * 6.28,
@@ -172,121 +172,146 @@
     }
 
     ships = ships.filter(s => {
-      const dir = s.vx > 0 ? 1 : -1;
-      const sz = s.size;
-      const wobbleY = Math.sin(frame * 0.015 + s.wobble) * 1.5;
+      const d = s.vx > 0 ? 1 : -1;
+      const z = s.size;
+      const wy = Math.sin(frame * 0.012 + s.wobble) * 2;
+      const c = s.color;
+      const fl = 0.5 + 0.5 * Math.sin(frame * 0.35 + s.wobble);
 
-      // Engine trail particles
-      s.trail.push({ x: s.x - dir * sz * 1.1, y: s.y + wobbleY, life: 30 });
+      // Engine trail
+      s.trail.push({ x: s.x - d * z * 1.6, y: s.y + wy, life: 35 });
       s.trail = s.trail.filter(t => {
         t.life--;
-        const a = t.life / 30;
-        ctx.beginPath(); ctx.arc(t.x - dir * a * 8, t.y + (Math.random() - 0.5) * 2, 2.5 * a, 0, 6.28);
-        ctx.fillStyle = `rgba(${s.color[0]},${s.color[1]},${s.color[2]},${0.25 * a})`;
+        const a = t.life / 35;
+        ctx.beginPath();
+        ctx.arc(t.x - d * a * 10, t.y + (Math.random() - 0.5) * 3, 3 * a, 0, 6.28);
+        ctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},${0.18 * a})`;
         ctx.fill();
         return t.life > 0;
       });
 
       ctx.save();
-      ctx.translate(s.x, s.y + wobbleY);
+      ctx.translate(s.x, s.y + wy);
 
-      // Ambient engine glow
-      ctx.beginPath(); ctx.arc(-dir * sz * 0.9, 0, sz * 0.7, 0, 6.28);
-      ctx.fillStyle = `rgba(${s.color[0]},${s.color[1]},${s.color[2]},0.06)`;
+      // Ambient glow around ship
+      ctx.beginPath(); ctx.ellipse(0, 0, z * 1.2, z * 0.4, 0, 0, 6.28);
+      ctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},0.03)`;
       ctx.fill();
 
-      // Main hull — elongated fuselage
+      // === Wide swept-back wings ===
+      // Port (top) wing
       ctx.beginPath();
-      ctx.moveTo(dir * sz * 1.3, 0);                     // nose
-      ctx.lineTo(dir * sz * 0.6, -sz * 0.12);            // upper nose taper
-      ctx.lineTo(-dir * sz * 0.3, -sz * 0.18);           // upper body
-      ctx.lineTo(-dir * sz * 0.9, -sz * 0.15);           // rear upper
-      ctx.lineTo(-dir * sz * 1.0, 0);                    // rear center
-      ctx.lineTo(-dir * sz * 0.9, sz * 0.15);            // rear lower
-      ctx.lineTo(-dir * sz * 0.3, sz * 0.18);            // lower body
-      ctx.lineTo(dir * sz * 0.6, sz * 0.12);             // lower nose taper
+      ctx.moveTo(d * z * 0.2, -z * 0.08);
+      ctx.lineTo(-d * z * 0.4, -z * 0.08);
+      ctx.lineTo(-d * z * 1.3, -z * 0.7);
+      ctx.lineTo(-d * z * 1.5, -z * 0.65);
+      ctx.lineTo(-d * z * 0.6, -z * 0.1);
       ctx.closePath();
-      ctx.fillStyle = `rgba(20, 28, 50, 0.8)`;
+      ctx.fillStyle = 'rgba(18, 25, 48, 0.9)';
       ctx.fill();
-      ctx.strokeStyle = `rgba(${s.color[0]},${s.color[1]},${s.color[2]},0.5)`;
-      ctx.lineWidth = 0.8;
-      ctx.stroke();
+      ctx.strokeStyle = `rgba(${c[0]},${c[1]},${c[2]},0.35)`;
+      ctx.lineWidth = 0.7; ctx.stroke();
 
-      // Top wing
+      // Starboard (bottom) wing
       ctx.beginPath();
-      ctx.moveTo(-dir * sz * 0.1, -sz * 0.18);
-      ctx.lineTo(-dir * sz * 0.5, -sz * 0.55);
-      ctx.lineTo(-dir * sz * 0.8, -sz * 0.5);
-      ctx.lineTo(-dir * sz * 0.7, -sz * 0.15);
+      ctx.moveTo(d * z * 0.2, z * 0.08);
+      ctx.lineTo(-d * z * 0.4, z * 0.08);
+      ctx.lineTo(-d * z * 1.3, z * 0.7);
+      ctx.lineTo(-d * z * 1.5, z * 0.65);
+      ctx.lineTo(-d * z * 0.6, z * 0.1);
       ctx.closePath();
-      ctx.fillStyle = `rgba(15, 22, 42, 0.85)`;
+      ctx.fillStyle = 'rgba(18, 25, 48, 0.9)';
       ctx.fill();
-      ctx.strokeStyle = `rgba(${s.color[0]},${s.color[1]},${s.color[2]},0.4)`;
-      ctx.lineWidth = 0.6;
+      ctx.strokeStyle = `rgba(${c[0]},${c[1]},${c[2]},0.35)`;
+      ctx.lineWidth = 0.7; ctx.stroke();
+
+      // Wing neon accent stripes
+      ctx.beginPath();
+      ctx.moveTo(-d * z * 0.2, -z * 0.09);
+      ctx.lineTo(-d * z * 1.1, -z * 0.55);
+      ctx.strokeStyle = `rgba(${c[0]},${c[1]},${c[2]},0.25)`;
+      ctx.lineWidth = 0.5; ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(-d * z * 0.2, z * 0.09);
+      ctx.lineTo(-d * z * 1.1, z * 0.55);
       ctx.stroke();
 
-      // Bottom wing
+      // === Central fuselage (flat, wide) ===
       ctx.beginPath();
-      ctx.moveTo(-dir * sz * 0.1, sz * 0.18);
-      ctx.lineTo(-dir * sz * 0.5, sz * 0.55);
-      ctx.lineTo(-dir * sz * 0.8, sz * 0.5);
-      ctx.lineTo(-dir * sz * 0.7, sz * 0.15);
+      ctx.moveTo(d * z * 1.5, 0);                // sharp nose
+      ctx.quadraticCurveTo(d * z * 1.0, -z * 0.1, d * z * 0.3, -z * 0.12);
+      ctx.lineTo(-d * z * 0.5, -z * 0.1);
+      ctx.lineTo(-d * z * 0.7, 0);
+      ctx.lineTo(-d * z * 0.5, z * 0.1);
+      ctx.lineTo(d * z * 0.3, z * 0.12);
+      ctx.quadraticCurveTo(d * z * 1.0, z * 0.1, d * z * 1.5, 0);
       ctx.closePath();
-      ctx.fillStyle = `rgba(15, 22, 42, 0.85)`;
+      const hullGrad = ctx.createLinearGradient(0, -z * 0.12, 0, z * 0.12);
+      hullGrad.addColorStop(0, 'rgba(35, 45, 75, 0.9)');
+      hullGrad.addColorStop(0.4, 'rgba(22, 30, 55, 0.95)');
+      hullGrad.addColorStop(1, 'rgba(15, 20, 40, 0.9)');
+      ctx.fillStyle = hullGrad;
       ctx.fill();
-      ctx.strokeStyle = `rgba(${s.color[0]},${s.color[1]},${s.color[2]},0.4)`;
-      ctx.lineWidth = 0.6;
-      ctx.stroke();
+      ctx.strokeStyle = `rgba(${c[0]},${c[1]},${c[2]},0.5)`;
+      ctx.lineWidth = 0.8; ctx.stroke();
 
-      // Wing tip lights
-      ctx.beginPath(); ctx.arc(-dir * sz * 0.5, -sz * 0.55, 1.5, 0, 6.28);
-      ctx.fillStyle = `rgba(${s.color[0]},${s.color[1]},${s.color[2]},0.9)`; ctx.fill();
-      ctx.beginPath(); ctx.arc(-dir * sz * 0.5, sz * 0.55, 1.5, 0, 6.28);
-      ctx.fillStyle = `rgba(255, 42, 109, 0.9)`; ctx.fill();
-
-      // Hull panel line
+      // Hull highlight (metallic shine)
       ctx.beginPath();
-      ctx.moveTo(dir * sz * 0.5, 0);
-      ctx.lineTo(-dir * sz * 0.8, 0);
-      ctx.strokeStyle = `rgba(${s.color[0]},${s.color[1]},${s.color[2]},0.15)`;
-      ctx.lineWidth = 0.5;
-      ctx.stroke();
+      ctx.moveTo(d * z * 1.3, -z * 0.02);
+      ctx.quadraticCurveTo(d * z * 0.5, -z * 0.08, -d * z * 0.3, -z * 0.06);
+      ctx.strokeStyle = 'rgba(180, 200, 255, 0.12)';
+      ctx.lineWidth = 1; ctx.stroke();
 
-      // Cockpit window
+      // Cockpit — elongated windshield
       ctx.beginPath();
-      ctx.ellipse(dir * sz * 0.7, 0, sz * 0.12, sz * 0.06, 0, 0, 6.28);
-      ctx.fillStyle = `rgba(${s.color[0]},${s.color[1]},${s.color[2]},0.85)`;
+      ctx.ellipse(d * z * 0.6, 0, z * 0.2, z * 0.055, 0, 0, 6.28);
+      ctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},0.15)`;
       ctx.fill();
       ctx.beginPath();
-      ctx.ellipse(dir * sz * 0.7, 0, sz * 0.18, sz * 0.09, 0, 0, 6.28);
-      ctx.fillStyle = `rgba(${s.color[0]},${s.color[1]},${s.color[2]},0.12)`;
+      ctx.ellipse(d * z * 0.6, 0, z * 0.13, z * 0.04, 0, 0, 6.28);
+      ctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},0.7)`;
+      ctx.fill();
+      // Windshield glint
+      ctx.beginPath();
+      ctx.ellipse(d * z * 0.65, -z * 0.015, z * 0.05, z * 0.015, 0, 0, 6.28);
+      ctx.fillStyle = 'rgba(255,255,255,0.3)';
       ctx.fill();
 
-      // Engine exhaust — dual flames
-      const exFlicker = 0.6 + 0.4 * Math.sin(frame * 0.4 + s.wobble);
-      const exLen = sz * (0.5 + 0.4 * exFlicker);
-      // Top engine
+      // Wing tip lights (blinking)
+      const blink = Math.sin(frame * 0.15 + s.wobble) > 0 ? 1 : 0.2;
+      ctx.beginPath(); ctx.arc(-d * z * 1.5, -z * 0.65, 2, 0, 6.28);
+      ctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},${0.9 * blink})`; ctx.fill();
+      ctx.beginPath(); ctx.arc(-d * z * 1.5, -z * 0.65, 5, 0, 6.28);
+      ctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},${0.1 * blink})`; ctx.fill();
+      ctx.beginPath(); ctx.arc(-d * z * 1.5, z * 0.65, 2, 0, 6.28);
+      ctx.fillStyle = `rgba(255, 42, 80,${0.9 * blink})`; ctx.fill();
+      ctx.beginPath(); ctx.arc(-d * z * 1.5, z * 0.65, 5, 0, 6.28);
+      ctx.fillStyle = `rgba(255, 42, 80,${0.1 * blink})`; ctx.fill();
+
+      // === Engine exhaust — wide spread ===
+      const exLen = z * (0.6 + 0.5 * fl);
+      // Main exhaust plume
       ctx.beginPath();
-      ctx.moveTo(-dir * sz * 0.9, -sz * 0.08);
-      ctx.lineTo(-dir * (sz * 0.9 + exLen * 0.8), -sz * 0.02);
-      ctx.lineTo(-dir * sz * 0.9, sz * 0.02);
-      ctx.fillStyle = `rgba(${s.color[0]},${s.color[1]},${s.color[2]},${0.35 * exFlicker})`;
+      ctx.moveTo(-d * z * 0.65, -z * 0.06);
+      ctx.quadraticCurveTo(-d * (z * 0.7 + exLen * 0.5), 0, -d * z * 0.65, z * 0.06);
+      ctx.lineTo(-d * (z * 0.65 + exLen), 0);
+      ctx.closePath();
+      const exGrad = ctx.createLinearGradient(-d * z * 0.65, 0, -d * (z * 0.65 + exLen), 0);
+      exGrad.addColorStop(0, `rgba(255,255,255,${0.5 * fl})`);
+      exGrad.addColorStop(0.2, `rgba(${c[0]},${c[1]},${c[2]},${0.5 * fl})`);
+      exGrad.addColorStop(1, `rgba(${c[0]},${c[1]},${c[2]},0)`);
+      ctx.fillStyle = exGrad;
       ctx.fill();
-      // Bottom engine
-      ctx.beginPath();
-      ctx.moveTo(-dir * sz * 0.9, sz * 0.02);
-      ctx.lineTo(-dir * (sz * 0.9 + exLen), sz * 0.05);
-      ctx.lineTo(-dir * sz * 0.9, sz * 0.12);
-      ctx.fillStyle = `rgba(${s.color[0]},${s.color[1]},${s.color[2]},${0.4 * exFlicker})`;
-      ctx.fill();
-      // Core bright center
-      ctx.beginPath(); ctx.arc(-dir * sz * 0.95, sz * 0.02, sz * 0.05, 0, 6.28);
-      ctx.fillStyle = `rgba(255,255,255,${0.4 * exFlicker})`; ctx.fill();
+
+      // Engine glow halo
+      ctx.beginPath(); ctx.arc(-d * z * 0.68, 0, z * 0.08, 0, 6.28);
+      ctx.fillStyle = `rgba(255,255,255,${0.6 * fl})`; ctx.fill();
+      ctx.beginPath(); ctx.arc(-d * z * 0.68, 0, z * 0.18, 0, 6.28);
+      ctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},${0.12 * fl})`; ctx.fill();
 
       ctx.restore();
-
       s.x += s.vx;
-      return s.x > -120 && s.x < W + 120;
+      return s.x > -150 && s.x < W + 150;
     });
   }
 
