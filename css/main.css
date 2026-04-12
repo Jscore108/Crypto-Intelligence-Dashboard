@@ -68,7 +68,7 @@ h1, h2, h3 { font-family: 'Orbitron', sans-serif; font-weight: 700; letter-spaci
 /* --- Top Navigation — Geometric Neon Banner --- */
 .top-nav {
   position: sticky; top: 0; z-index: 100;
-  background: rgba(3, 4, 10, 0.85);
+  background: rgba(3, 4, 10, 0.8);
   backdrop-filter: blur(24px) saturate(1.5);
   -webkit-backdrop-filter: blur(24px) saturate(1.5);
   border-bottom: 1px solid var(--border-glow);
@@ -76,65 +76,64 @@ h1, h2, h3 { font-family: 'Orbitron', sans-serif; font-weight: 700; letter-spaci
   overflow: hidden;
 }
 
-/* Animated geometric pattern overlay */
+/* Animated neon triangles + hexagons flowing across */
 .top-nav::before {
   content: '';
   position: absolute;
-  top: 0; left: 0; width: 200%; height: 100%;
+  top: 0; left: 0; width: 300%; height: 100%;
   pointer-events: none;
   background:
-    /* Hexagons */
-    radial-gradient(circle at 5% 50%, rgba(0,229,255,0.06) 2px, transparent 2px),
-    radial-gradient(circle at 12% 20%, rgba(200,79,255,0.05) 1.5px, transparent 1.5px),
-    radial-gradient(circle at 20% 70%, rgba(0,255,163,0.04) 2px, transparent 2px),
-    radial-gradient(circle at 28% 40%, rgba(255,42,109,0.05) 1.5px, transparent 1.5px),
-    radial-gradient(circle at 35% 80%, rgba(0,229,255,0.04) 1px, transparent 1px),
-    radial-gradient(circle at 42% 15%, rgba(200,79,255,0.06) 2px, transparent 2px),
-    radial-gradient(circle at 50% 60%, rgba(255,204,0,0.04) 1.5px, transparent 1.5px),
-    radial-gradient(circle at 58% 30%, rgba(0,229,255,0.05) 1px, transparent 1px),
-    radial-gradient(circle at 65% 75%, rgba(0,255,163,0.05) 2px, transparent 2px),
-    radial-gradient(circle at 72% 45%, rgba(200,79,255,0.04) 1.5px, transparent 1.5px),
-    radial-gradient(circle at 80% 20%, rgba(255,42,109,0.05) 2px, transparent 2px),
-    radial-gradient(circle at 88% 65%, rgba(0,229,255,0.04) 1.5px, transparent 1.5px),
-    radial-gradient(circle at 95% 35%, rgba(255,204,0,0.05) 1px, transparent 1px),
-    /* Geometric lines */
-    linear-gradient(60deg, transparent 48%, rgba(0,229,255,0.03) 49%, rgba(0,229,255,0.03) 51%, transparent 52%),
-    linear-gradient(120deg, transparent 48%, rgba(200,79,255,0.025) 49%, rgba(200,79,255,0.025) 51%, transparent 52%),
-    linear-gradient(0deg, transparent 48%, rgba(0,255,163,0.02) 49%, rgba(0,255,163,0.02) 51%, transparent 52%);
-  background-size: 200px 60px, 180px 60px, 160px 60px, 140px 60px, 200px 60px,
-    170px 60px, 190px 60px, 150px 60px, 180px 60px, 160px 60px,
-    200px 60px, 170px 60px, 150px 60px,
-    100% 100%, 100% 100%, 100% 100%;
-  animation: navGeoFlow 20s linear infinite;
+    /* Triangle grid */
+    conic-gradient(from 0deg at 3% 50%, transparent 0deg, rgba(0,229,255,0.12) 1deg, transparent 4deg),
+    conic-gradient(from 60deg at 10% 25%, transparent 0deg, rgba(200,79,255,0.1) 1deg, transparent 4deg),
+    conic-gradient(from 120deg at 17% 75%, transparent 0deg, rgba(0,255,163,0.1) 1deg, transparent 4deg),
+    conic-gradient(from 180deg at 24% 40%, transparent 0deg, rgba(255,42,109,0.12) 1deg, transparent 4deg),
+    conic-gradient(from 240deg at 31% 60%, transparent 0deg, rgba(255,204,0,0.1) 1deg, transparent 4deg),
+    conic-gradient(from 300deg at 38% 30%, transparent 0deg, rgba(0,229,255,0.1) 1deg, transparent 4deg),
+    conic-gradient(from 0deg at 45% 70%, transparent 0deg, rgba(200,79,255,0.12) 1deg, transparent 4deg),
+    conic-gradient(from 60deg at 52% 20%, transparent 0deg, rgba(0,255,163,0.1) 1deg, transparent 4deg),
+    conic-gradient(from 120deg at 59% 50%, transparent 0deg, rgba(255,42,109,0.1) 1deg, transparent 4deg),
+    conic-gradient(from 180deg at 66% 80%, transparent 0deg, rgba(0,229,255,0.12) 1deg, transparent 4deg),
+    conic-gradient(from 240deg at 73% 35%, transparent 0deg, rgba(255,204,0,0.1) 1deg, transparent 4deg),
+    conic-gradient(from 300deg at 80% 65%, transparent 0deg, rgba(200,79,255,0.1) 1deg, transparent 4deg),
+    conic-gradient(from 0deg at 87% 45%, transparent 0deg, rgba(0,255,163,0.12) 1deg, transparent 4deg),
+    conic-gradient(from 60deg at 94% 20%, transparent 0deg, rgba(255,42,109,0.1) 1deg, transparent 4deg),
+    /* Connecting lines */
+    linear-gradient(30deg, transparent 47%, rgba(0,229,255,0.06) 48%, transparent 49%),
+    linear-gradient(150deg, transparent 47%, rgba(200,79,255,0.05) 48%, transparent 49%),
+    linear-gradient(90deg, transparent 47%, rgba(0,255,163,0.04) 48%, transparent 49%);
+  background-size: 80px 60px;
+  animation: navGeoFlow 12s linear infinite;
 }
 
 @keyframes navGeoFlow {
   0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+  100% { transform: translateX(-33.33%); }
 }
 
-/* Neon bottom edge glow */
+/* Thick neon rainbow edge with glow */
 .top-nav::after {
   content: '';
   position: absolute;
-  bottom: 0; left: 0; width: 100%; height: 2px;
+  bottom: 0; left: 0; width: 100%; height: 3px;
   background: linear-gradient(90deg,
-    transparent 0%,
-    rgba(0,229,255,0.4) 15%,
-    rgba(200,79,255,0.5) 35%,
-    rgba(255,42,109,0.4) 50%,
-    rgba(255,204,0,0.3) 65%,
-    rgba(0,255,163,0.4) 80%,
-    rgba(0,229,255,0.3) 95%,
-    transparent 100%
+    rgba(0,229,255,0.7) 0%,
+    rgba(0,255,163,0.6) 15%,
+    rgba(200,79,255,0.7) 30%,
+    rgba(255,42,109,0.6) 45%,
+    rgba(255,204,0,0.7) 60%,
+    rgba(0,229,255,0.6) 75%,
+    rgba(200,79,255,0.7) 90%,
+    rgba(0,255,163,0.6) 100%
   );
-  animation: neonEdgeShift 4s ease-in-out infinite alternate;
+  box-shadow: 0 0 12px rgba(0,229,255,0.3), 0 0 30px rgba(200,79,255,0.15);
+  animation: neonEdgeShift 3s ease-in-out infinite alternate;
 }
 
 @keyframes neonEdgeShift {
   0% { filter: hue-rotate(0deg) brightness(1); }
-  50% { filter: hue-rotate(30deg) brightness(1.3); }
-  100% { filter: hue-rotate(-20deg) brightness(1.1); }
+  50% { filter: hue-rotate(40deg) brightness(1.4); }
+  100% { filter: hue-rotate(-30deg) brightness(1.2); }
 }
 
 .top-nav__inner {
@@ -201,17 +200,19 @@ h1, h2, h3 { font-family: 'Orbitron', sans-serif; font-weight: 700; letter-spaci
   overflow: hidden;
 }
 
-/* Subtle flowing diamonds */
+/* Flowing diamond + hex grid */
 .top-bar::before {
   content: '';
   position: absolute;
   top: 0; left: 0; width: 200%; height: 100%;
   pointer-events: none;
   background:
-    linear-gradient(45deg, transparent 46%, rgba(0,229,255,0.015) 47%, rgba(0,229,255,0.015) 53%, transparent 54%),
-    linear-gradient(-45deg, transparent 46%, rgba(200,79,255,0.012) 47%, rgba(200,79,255,0.012) 53%, transparent 54%);
-  background-size: 30px 30px;
-  animation: tickerGeoFlow 15s linear infinite;
+    linear-gradient(45deg, transparent 44%, rgba(0,229,255,0.04) 46%, transparent 48%),
+    linear-gradient(-45deg, transparent 44%, rgba(200,79,255,0.035) 46%, transparent 48%),
+    linear-gradient(0deg, transparent 44%, rgba(0,255,163,0.025) 46%, transparent 48%),
+    radial-gradient(circle, rgba(255,204,0,0.04) 1px, transparent 1px);
+  background-size: 24px 24px, 24px 24px, 40px 40px, 32px 32px;
+  animation: tickerGeoFlow 10s linear infinite;
 }
 
 @keyframes tickerGeoFlow {
