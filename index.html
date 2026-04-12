@@ -116,7 +116,7 @@
         <div class="hex-bubble__inner">
           <div class="hex-bubble__label">MVRV Z</div>
           <div class="hex-bubble__value" id="mvrv-sell-val">--</div>
-          <div class="hex-bubble__target">sell @ 7.0</div>
+          <div class="hex-bubble__target">sell @ 5.0</div>
           <div class="hex-bubble__pct" id="mvrv-sell-pct"></div>
         </div>
       </div>
@@ -166,34 +166,6 @@
     </div>
 
     <!-- (composite moved to top-right corner above) -->
-
-    <!-- CBBI — Colin Talks Crypto Bitcoin Bull Run Index -->
-    <div class="section-header">
-      <h2>CBBI — Bitcoin Bull Run Index</h2>
-      <a href="https://colintalkscrypto.com/cbbi/" target="_blank" rel="noopener" class="section-header__badge" style="text-decoration:none;">colintalkscrypto.com</a>
-    </div>
-
-    <div class="cbbi-panel" id="cbbi-panel">
-      <!-- Main score -->
-      <div class="cbbi-score-ring" id="cbbi-score-ring">
-        <div class="cbbi-score-ring__inner">
-          <div class="cbbi-score-ring__value" id="cbbi-score">--</div>
-          <div class="cbbi-score-ring__label">CONFIDENCE</div>
-        </div>
-      </div>
-      <!-- Sub-indicators grid -->
-      <div class="cbbi-metrics" id="cbbi-metrics">
-        <div class="cbbi-metric"><span class="cbbi-metric__name">Pi Cycle Top</span><span class="cbbi-metric__bar"><span class="cbbi-metric__fill" id="cbbi-pi" style="width:0%"></span></span><span class="cbbi-metric__val" id="cbbi-pi-val">--</span></div>
-        <div class="cbbi-metric"><span class="cbbi-metric__name">RUPL/NUPL</span><span class="cbbi-metric__bar"><span class="cbbi-metric__fill" id="cbbi-rupl" style="width:0%"></span></span><span class="cbbi-metric__val" id="cbbi-rupl-val">--</span></div>
-        <div class="cbbi-metric"><span class="cbbi-metric__name">RHODL Ratio</span><span class="cbbi-metric__bar"><span class="cbbi-metric__fill" id="cbbi-rhodl" style="width:0%"></span></span><span class="cbbi-metric__val" id="cbbi-rhodl-val">--</span></div>
-        <div class="cbbi-metric"><span class="cbbi-metric__name">Puell Multiple</span><span class="cbbi-metric__bar"><span class="cbbi-metric__fill" id="cbbi-puell" style="width:0%"></span></span><span class="cbbi-metric__val" id="cbbi-puell-val">--</span></div>
-        <div class="cbbi-metric"><span class="cbbi-metric__name">2Y MA Multiplier</span><span class="cbbi-metric__bar"><span class="cbbi-metric__fill" id="cbbi-2yma" style="width:0%"></span></span><span class="cbbi-metric__val" id="cbbi-2yma-val">--</span></div>
-        <div class="cbbi-metric"><span class="cbbi-metric__name">Trolololo Log</span><span class="cbbi-metric__bar"><span class="cbbi-metric__fill" id="cbbi-trolo" style="width:0%"></span></span><span class="cbbi-metric__val" id="cbbi-trolo-val">--</span></div>
-        <div class="cbbi-metric"><span class="cbbi-metric__name">MVRV Z-Score</span><span class="cbbi-metric__bar"><span class="cbbi-metric__fill" id="cbbi-mvrv" style="width:0%"></span></span><span class="cbbi-metric__val" id="cbbi-mvrv-val">--</span></div>
-        <div class="cbbi-metric"><span class="cbbi-metric__name">Reserve Risk</span><span class="cbbi-metric__bar"><span class="cbbi-metric__fill" id="cbbi-risk" style="width:0%"></span></span><span class="cbbi-metric__val" id="cbbi-risk-val">--</span></div>
-        <div class="cbbi-metric"><span class="cbbi-metric__name">Woobull Top Cap</span><span class="cbbi-metric__bar"><span class="cbbi-metric__fill" id="cbbi-woobull" style="width:0%"></span></span><span class="cbbi-metric__val" id="cbbi-woobull-val">--</span></div>
-      </div>
-    </div>
 
     <!-- Indicator Grid -->
     <div class="section-header">
@@ -254,6 +226,75 @@
       </div>
 
       <!-- Indicator sell levels now in hex stat bars above -->
+
+      <!-- Mayer Multiple -->
+      <div class="indicator-card" id="card-mayer">
+        <div class="indicator-card__header">
+          <span class="indicator-card__title">Mayer Multiple</span>
+          <span class="status-badge" id="mayer-badge">--</span>
+        </div>
+        <div class="indicator-card__value" id="mayer-value">--</div>
+        <div class="indicator-card__label" id="mayer-label">sell &gt; 2.4</div>
+      </div>
+
+      <!-- CBBI -->
+      <div class="indicator-card" id="card-cbbi">
+        <div class="indicator-card__header">
+          <span class="indicator-card__title">CBBI Index</span>
+          <span class="status-badge" id="cbbi-badge">--</span>
+        </div>
+        <div class="indicator-card__value" id="cbbi-score">--</div>
+        <div class="indicator-card__label" id="cbbi-label"><a href="https://colintalkscrypto.com/cbbi/" target="_blank" rel="noopener" style="color:var(--accent-neon-purple);font-size:0.65rem;">colintalkscrypto.com</a></div>
+      </div>
+
+      <!-- ETH Fib Levels -->
+      <div class="indicator-card" id="card-eth-fib">
+        <div class="indicator-card__header">
+          <span class="indicator-card__title">ETH Fib Levels</span>
+          <span class="status-badge status-badge--cyan">FIBS</span>
+        </div>
+        <div id="eth-fib-content" style="font-family:'JetBrains Mono',monospace;font-size:0.68rem;"></div>
+      </div>
+
+      <!-- Total3 Market Cap -->
+      <div class="indicator-card" id="card-total3">
+        <div class="indicator-card__header">
+          <span class="indicator-card__title">Total3 Cap</span>
+          <span class="status-badge" id="total3-badge">--</span>
+        </div>
+        <div class="indicator-card__value" id="total3-value">--</div>
+        <div class="indicator-card__label" id="total3-label">1.618 Fib = $1.54T</div>
+      </div>
+
+      <!-- BTC 50W SMA -->
+      <div class="indicator-card" id="card-btc50w">
+        <div class="indicator-card__header">
+          <span class="indicator-card__title">BTC 50W SMA</span>
+          <span class="status-badge" id="btc50w-badge">--</span>
+        </div>
+        <div class="indicator-card__value" id="btc50w-value">--</div>
+        <div class="indicator-card__label" id="btc50w-label">Loading...</div>
+      </div>
+
+      <!-- ETH Weekly Stoch RSI -->
+      <div class="indicator-card" id="card-eth-stoch">
+        <div class="indicator-card__header">
+          <span class="indicator-card__title">ETH W Stoch RSI</span>
+          <span class="status-badge" id="eth-stoch-badge">--</span>
+        </div>
+        <div class="indicator-card__value" id="eth-stoch-value">--</div>
+        <div class="indicator-card__label" id="eth-stoch-label">top signal &gt; 90</div>
+      </div>
+
+      <!-- Coinglass Bull Market Peak -->
+      <div class="indicator-card" id="card-coinglass">
+        <div class="indicator-card__header">
+          <span class="indicator-card__title">Bull Peak Checklist</span>
+          <span class="status-badge status-badge--cyan">COINGLASS</span>
+        </div>
+        <div class="indicator-card__value" id="coinglass-value">0/30</div>
+        <div class="indicator-card__label" id="coinglass-label"><a href="https://www.coinglass.com/bull-market-peak-signals" target="_blank" rel="noopener" style="color:var(--accent-neon-blue);font-size:0.65rem;">coinglass.com</a></div>
+      </div>
 
     </div>
 
@@ -327,7 +368,7 @@
     // Indicator sell thresholds
     const INDICATOR_SELL_LEVELS = [
       { name: 'Fear & Greed', sellAbove: 75, label: '> 75 = Sell Zone' },
-      { name: 'MVRV Z-Score', sellAbove: 7, label: '> 7 = Sell Zone' },
+      { name: 'MVRV Z-Score', sellAbove: 5, label: '> 5 = Cycle Top' },
       { name: 'Puell Multiple', sellAbove: 2, label: '> 2 = Sell Zone' },
       { name: 'BTC Dominance', sellAbove: 65, label: '> 65% = Sell Signal' },
       { name: 'Pi Cycle', sellAbove: 1.0, label: 'Ratio >= 1.0 = Top' },
@@ -723,17 +764,34 @@
           renderMoversTable('losers-body', sorted.slice(-5).reverse());
         }).catch(() => {});
 
-        // BTC history for indicators (heaviest call)
-        // Needs Fear & Greed + BTC Dominance for composite
+        // BTC + ETH history for indicators
         Promise.all([
           API.getBTCHistory(365),
           API.getFearGreed(),
           API.getGlobalData(),
-        ]).then(([btcHistory, fg, global]) => {
+          API.getHistoricalPrices('ethereum', 365).catch(() => null),
+        ]).then(([btcHistory, fg, global, ethHistory]) => {
           if (!btcHistory?.prices) return;
+          const btcPrices = btcHistory.prices.map(p => p[1]);
+          const ethPrices = ethHistory?.prices ? ethHistory.prices.map(p => p[1]) : null;
           const fngVal = fg?.[0]?.value || 50;
           const btcD = global?.market_cap_percentage?.btc || 50;
-          renderIndicators(btcHistory.prices.map(p => p[1]), fngVal, btcD);
+          renderIndicators(btcPrices, fngVal, btcD);
+          renderExtraIndicators(btcPrices, ethPrices);
+
+          // Total3 market cap (total - BTC - ETH)
+          if (global?.total_market_cap?.usd) {
+            const total = global.total_market_cap.usd;
+            const btcMcap = global.market_cap_percentage?.btc ? total * global.market_cap_percentage.btc / 100 : 0;
+            const ethMcap = global.market_cap_percentage?.eth ? total * global.market_cap_percentage.eth / 100 : 0;
+            const total3 = (total - btcMcap - ethMcap) / 1e12;
+            const target = 1.54; // $1.54T
+            const pct = Math.round((total3 / target) * 100);
+            document.getElementById('total3-value').textContent = '$' + total3.toFixed(2) + 'T';
+            document.getElementById('total3-label').textContent = `${pct}% to $${target}T (1.618 Fib)`;
+            const badge = document.getElementById('total3-badge');
+            if (badge) { badge.textContent = total3 >= target ? 'REACHED' : pct + '%'; badge.className = `status-badge status-badge--${total3 >= target ? 'red' : pct > 70 ? 'yellow' : 'green'}`; }
+          }
         }).catch(e => console.error('[Dashboard] Indicator error:', e));
 
         // Timestamp
@@ -810,72 +868,95 @@
       if (el) el.textContent = countdown + 's';
     }
 
-    // --- CBBI — Fetch real data via our Vercel serverless proxy ---
+    // --- CBBI — just the confidence % via proxy ---
     async function loadCBBI() {
-      const metricMap = [
-        { key: 'PiCycle',     name: 'Pi Cycle Top',     fillId: 'cbbi-pi',     valId: 'cbbi-pi-val' },
-        { key: 'NUPL',        name: 'RUPL/NUPL',        fillId: 'cbbi-rupl',   valId: 'cbbi-rupl-val' },
-        { key: 'RHODL',       name: 'RHODL Ratio',      fillId: 'cbbi-rhodl',  valId: 'cbbi-rhodl-val' },
-        { key: 'Puell',       name: 'Puell Multiple',   fillId: 'cbbi-puell',  valId: 'cbbi-puell-val' },
-        { key: '2YMA',        name: '2Y MA Multiplier',  fillId: 'cbbi-2yma',  valId: 'cbbi-2yma-val' },
-        { key: 'Trolololo',   name: 'Trolololo Log',    fillId: 'cbbi-trolo',  valId: 'cbbi-trolo-val' },
-        { key: 'MVRV',        name: 'MVRV Z-Score',     fillId: 'cbbi-mvrv',   valId: 'cbbi-mvrv-val' },
-        { key: 'ReserveRisk', name: 'Reserve Risk',     fillId: 'cbbi-risk',   valId: 'cbbi-risk-val' },
-        { key: 'Woobull',     name: 'Woobull Top Cap',  fillId: 'cbbi-woobull',valId: 'cbbi-woobull-val' },
-      ];
-
       try {
-        // Fetch from our serverless proxy (bypasses CORS)
         const res = await fetch('/api/cbbi');
         if (!res.ok) throw new Error('Proxy failed');
         const raw = await res.json();
-        if (raw.error) throw new Error(raw.error);
-
-        // CBBI JSON structure: { "YYYY-MM-DD": { Confidence, PiCycle, NUPL, ... }, ... }
-        // Get the latest date entry
         let data = raw;
         const dateKeys = Object.keys(raw).filter(k => /^\d{4}/.test(k)).sort();
-        if (dateKeys.length > 0) {
-          data = raw[dateKeys[dateKeys.length - 1]];
-        }
-
-        // Confidence score
+        if (dateKeys.length > 0) data = raw[dateKeys[dateKeys.length - 1]];
         const confidence = data.Confidence !== undefined ? Math.round(data.Confidence * 100) : null;
+        const el = document.getElementById('cbbi-score');
+        const badge = document.getElementById('cbbi-badge');
         if (confidence !== null) {
-          const scoreEl = document.getElementById('cbbi-score');
-          scoreEl.textContent = confidence + '%';
-          const ring = document.getElementById('cbbi-score-ring');
-          const clr = confidence > 80 ? 'var(--accent-red)' : confidence > 50 ? 'var(--accent-gold)' : 'var(--accent-neon-green)';
-          ring.style.background = `conic-gradient(${clr} 0%, ${clr} ${confidence}%, rgba(100,120,200,0.1) ${confidence}%, rgba(100,120,200,0.1) 100%)`;
-          scoreEl.style.color = clr;
-        }
-
-        // Sub-indicators
-        metricMap.forEach(m => {
-          // Try exact key, then fuzzy match
-          let val = data[m.key];
-          if (val === undefined) {
-            for (const k of Object.keys(data)) {
-              if (k.toLowerCase().replace(/[\s_-]/g, '') === m.key.toLowerCase()) {
-                val = data[k]; break;
-              }
-            }
-          }
-          if (val !== undefined && val !== null) {
-            const pct = Math.round(Number(val) * 100);
-            const fillEl = document.getElementById(m.fillId);
-            const valEl = document.getElementById(m.valId);
-            if (fillEl) fillEl.style.width = Math.min(100, Math.max(0, pct)) + '%';
-            if (valEl) {
-              valEl.textContent = pct + '%';
-              valEl.style.color = pct > 80 ? 'var(--accent-red)' : pct > 50 ? 'var(--accent-gold)' : 'var(--accent-neon-green)';
-            }
-          }
-        });
+          el.textContent = confidence + '%';
+          el.style.color = confidence > 80 ? 'var(--accent-red)' : confidence > 50 ? 'var(--accent-gold)' : 'var(--accent-neon-green)';
+          if (badge) { badge.textContent = confidence > 80 ? 'SELL' : confidence > 50 ? 'CAUTION' : 'SAFE'; badge.className = `status-badge status-badge--${confidence > 80 ? 'red' : confidence > 50 ? 'yellow' : 'green'}`; }
+        } else { el.textContent = 'N/A'; }
       } catch (e) {
-        console.warn('[CBBI] Fetch failed:', e.message);
+        console.warn('[CBBI]', e.message);
         document.getElementById('cbbi-score').textContent = 'N/A';
-        document.getElementById('cbbi-score').style.fontSize = '1.2rem';
+      }
+    }
+
+    // --- Extra indicators (Mayer, Fibs, Total3, 50W SMA, Stoch RSI) ---
+    function renderExtraIndicators(closingPrices, ethPrices) {
+      const btcPrice = closingPrices[closingPrices.length - 1];
+
+      // Mayer Multiple = Price / 200 DMA
+      const sma200 = Indicators.SMA(closingPrices, 200);
+      if (sma200) {
+        const mayer = btcPrice / sma200;
+        const el = document.getElementById('mayer-value');
+        const badge = document.getElementById('mayer-badge');
+        el.textContent = mayer.toFixed(2);
+        const atSell = mayer >= 2.4;
+        el.style.color = atSell ? 'var(--accent-red)' : mayer > 1.5 ? 'var(--accent-gold)' : 'var(--accent-neon-green)';
+        if (badge) { badge.textContent = atSell ? 'SELL' : mayer > 1.5 ? 'WATCH' : 'SAFE'; badge.className = `status-badge status-badge--${atSell ? 'red' : mayer > 1.5 ? 'yellow' : 'green'}`; }
+        document.getElementById('mayer-label').textContent = `200 DMA: $${Math.round(sma200).toLocaleString()} | sell > 2.4`;
+      }
+
+      // BTC 50W SMA (~350 daily)
+      const sma350 = Indicators.SMA(closingPrices, 350);
+      if (sma350) {
+        const pctAbove = ((btcPrice - sma350) / sma350 * 100).toFixed(1);
+        document.getElementById('btc50w-value').textContent = '$' + Math.round(sma350).toLocaleString();
+        document.getElementById('btc50w-label').textContent = `BTC ${pctAbove > 0 ? '+' : ''}${pctAbove}% from 50W`;
+        const badge = document.getElementById('btc50w-badge');
+        if (badge) { badge.textContent = pctAbove > 0 ? 'ABOVE' : 'BELOW'; badge.className = `status-badge status-badge--${pctAbove > 0 ? 'green' : 'red'}`; }
+      }
+
+      // ETH Fib Levels (from ATH ~$4,878)
+      const ethATH = 4878;
+      const fibs = [
+        { level: '0.236', price: Math.round(ethATH * 0.236) },
+        { level: '0.382', price: Math.round(ethATH * 0.382) },
+        { level: '0.5', price: Math.round(ethATH * 0.5) },
+        { level: '0.618', price: Math.round(ethATH * 0.618) },
+        { level: '0.786', price: Math.round(ethATH * 0.786) },
+        { level: '1.0', price: ethATH },
+        { level: '1.618', price: Math.round(ethATH * 1.618) },
+        { level: '2.618', price: Math.round(ethATH * 2.618) },
+        { level: '3.618', price: Math.round(ethATH * 3.618) },
+        { level: '4.236', price: Math.round(ethATH * 4.236) },
+      ];
+      const fibEl = document.getElementById('eth-fib-content');
+      if (fibEl && ethPrices && ethPrices.length > 0) {
+        const ethPrice = ethPrices[ethPrices.length - 1];
+        fibEl.innerHTML = fibs.map(f => {
+          const pctAway = ((f.price - ethPrice) / ethPrice * 100);
+          const reached = ethPrice >= f.price;
+          const clr = reached ? 'var(--accent-neon-green)' : pctAway < 20 ? 'var(--accent-gold)' : 'var(--text-muted)';
+          return `<div style="display:flex;justify-content:space-between;padding:2px 0;"><span style="color:${clr}">${f.level}</span><span style="color:var(--text-primary)">$${f.price.toLocaleString()}</span></div>`;
+        }).join('');
+      }
+
+      // ETH Weekly Stochastic RSI (approximate with 14-period on weekly data)
+      if (ethPrices && ethPrices.length > 100) {
+        // Sample every 7th data point for weekly
+        const weekly = ethPrices.filter((_, i) => i % 7 === 0);
+        const rsi = Indicators.RSI(weekly, 14);
+        if (rsi !== null) {
+          const stochEl = document.getElementById('eth-stoch-value');
+          const stochBadge = document.getElementById('eth-stoch-badge');
+          const pctToTop = Math.round((rsi / 90) * 100);
+          stochEl.textContent = rsi.toFixed(1);
+          stochEl.style.color = rsi > 90 ? 'var(--accent-red)' : rsi > 70 ? 'var(--accent-gold)' : 'var(--accent-neon-green)';
+          document.getElementById('eth-stoch-label').textContent = `${pctToTop}% to 90 top signal`;
+          if (stochBadge) { stochBadge.textContent = rsi > 90 ? 'TOP' : rsi > 70 ? 'WATCH' : 'SAFE'; stochBadge.className = `status-badge status-badge--${rsi > 90 ? 'red' : rsi > 70 ? 'yellow' : 'green'}`; }
+        }
       }
     }
 

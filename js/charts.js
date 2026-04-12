@@ -321,6 +321,27 @@ const Charts = (() => {
       });
       series.setData(lineData);
 
+      // Fib levels from ATH $4,878
+      const ethATH = 4878;
+      const ethFibs = [
+        { level: '1.0', price: ethATH, color: '#ffffff' },
+        { level: '1.618', price: Math.round(ethATH * 1.618), color: '#ff5500' },
+        { level: '2.618', price: Math.round(ethATH * 2.618), color: '#ff00aa' },
+        { level: '3.618', price: Math.round(ethATH * 3.618), color: '#aa00ff' },
+        { level: '4.236', price: Math.round(ethATH * 4.236), color: '#ff0055' },
+      ];
+      ethFibs.forEach(f => {
+        series.createPriceLine({
+          price: f.price,
+          color: f.color,
+          lineWidth: 1,
+          lineStyle: 2,
+          axisLabelVisible: true,
+          title: `${f.level} ($${(f.price/1000).toFixed(1)}K)`,
+        });
+      });
+
+      // Sell zone lines
       [4300, 5000, 6900].forEach(price => {
         series.createPriceLine({
           price: price,

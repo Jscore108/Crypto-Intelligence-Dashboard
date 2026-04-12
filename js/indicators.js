@@ -148,7 +148,7 @@ const Indicators = (() => {
     let label, color;
     if (d >= 60) { label = 'BTC Dominant'; color = 'yellow'; }
     else if (d >= 50) { label = 'Neutral'; color = 'yellow'; }
-    else if (d >= 40) { label = 'Alts Gaining'; color = 'cyan'; }
+    else if (d >= 45) { label = 'Alts Gaining'; color = 'cyan'; }
     else { label = 'Alt Season'; color = 'green'; }
     return { label, color, value: d };
   }
