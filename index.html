@@ -39,8 +39,8 @@
   <nav class="top-nav">
     <div class="top-nav__inner">
       <div class="top-nav__brand">
-        <div class="top-nav__brand-icon">CI</div>
-        <span>Crypto Intel</span>
+        <div class="top-nav__brand-icon">₿</div>
+        <span>Crypto Swiza Intel</span>
       </div>
       <button class="nav-toggle" onclick="document.querySelector('.top-nav__links').classList.toggle('open')" aria-label="Toggle navigation">&#9776;</button>
       <div class="top-nav__links">
@@ -256,14 +256,24 @@
         <div id="eth-fib-content" style="font-family:'JetBrains Mono',monospace;font-size:0.68rem;"></div>
       </div>
 
-      <!-- Total3 Market Cap -->
+      <!-- Total3 Market Cap — 1.618 Fib -->
       <div class="indicator-card" id="card-total3">
         <div class="indicator-card__header">
-          <span class="indicator-card__title">Total3 Cap</span>
+          <span class="indicator-card__title">Total3 1.618 Fib</span>
           <span class="status-badge" id="total3-badge">--</span>
         </div>
         <div class="indicator-card__value" id="total3-value">--</div>
-        <div class="indicator-card__label" id="total3-label">1.618 Fib = $1.54T</div>
+        <div class="indicator-card__label" id="total3-label">target $1.54T</div>
+      </div>
+
+      <!-- Total3 Market Cap — 2.618 Fib -->
+      <div class="indicator-card" id="card-total3-2618">
+        <div class="indicator-card__header">
+          <span class="indicator-card__title">Total3 2.618 Fib</span>
+          <span class="status-badge" id="total3-2618-badge">--</span>
+        </div>
+        <div class="indicator-card__value" id="total3-2618-value">--</div>
+        <div class="indicator-card__label" id="total3-2618-label">target $2.09T</div>
       </div>
 
       <!-- BTC 50W SMA -->
@@ -785,12 +795,22 @@
             const btcMcap = global.market_cap_percentage?.btc ? total * global.market_cap_percentage.btc / 100 : 0;
             const ethMcap = global.market_cap_percentage?.eth ? total * global.market_cap_percentage.eth / 100 : 0;
             const total3 = (total - btcMcap - ethMcap) / 1e12;
-            const target = 1.54; // $1.54T
-            const pct = Math.round((total3 / target) * 100);
+
+            // 1.618 Fib
+            const t1 = 1.54;
+            const pct1 = Math.round((total3 / t1) * 100);
             document.getElementById('total3-value').textContent = '$' + total3.toFixed(2) + 'T';
-            document.getElementById('total3-label').textContent = `${pct}% to $${target}T (1.618 Fib)`;
-            const badge = document.getElementById('total3-badge');
-            if (badge) { badge.textContent = total3 >= target ? 'REACHED' : pct + '%'; badge.className = `status-badge status-badge--${total3 >= target ? 'red' : pct > 70 ? 'yellow' : 'green'}`; }
+            document.getElementById('total3-label').textContent = `${pct1}% to $${t1}T`;
+            const b1 = document.getElementById('total3-badge');
+            if (b1) { b1.textContent = total3 >= t1 ? 'REACHED' : pct1 + '%'; b1.className = `status-badge status-badge--${total3 >= t1 ? 'red' : pct1 > 70 ? 'yellow' : 'green'}`; }
+
+            // 2.618 Fib
+            const t2 = 2.09;
+            const pct2 = Math.round((total3 / t2) * 100);
+            document.getElementById('total3-2618-value').textContent = '$' + total3.toFixed(2) + 'T';
+            document.getElementById('total3-2618-label').textContent = `${pct2}% to $${t2}T`;
+            const b2 = document.getElementById('total3-2618-badge');
+            if (b2) { b2.textContent = total3 >= t2 ? 'REACHED' : pct2 + '%'; b2.className = `status-badge status-badge--${total3 >= t2 ? 'red' : pct2 > 70 ? 'yellow' : 'green'}`; }
           }
         }).catch(e => console.error('[Dashboard] Indicator error:', e));
 
@@ -870,25 +890,60 @@
 
     // --- CBBI — just the confidence % via proxy ---
     async function loadCBBI() {
+      function setCBBI(confidence) {
+        const el = document.getElementById('cbbi-score');
+        const badge = document.getElementById('cbbi-badge');
+        el.textContent = confidence + '%';
+        el.style.color = confidence > 80 ? 'var(--accent-red)' : confidence > 50 ? 'var(--accent-gold)' : 'var(--accent-neon-green)';
+        if (badge) { badge.textContent = confidence > 80 ? 'SELL' : confidence > 50 ? 'CAUTION' : 'SAFE'; badge.className = `status-badge status-badge--${confidence > 80 ? 'red' : confidence > 50 ? 'yellow' : 'green'}`; }
+      }
+
+      // Try serverless proxy first
       try {
         const res = await fetch('/api/cbbi');
         if (!res.ok) throw new Error('Proxy failed');
         const raw = await res.json();
+        if (raw.error) throw new Error(raw.error);
         let data = raw;
         const dateKeys = Object.keys(raw).filter(k => /^\d{4}/.test(k)).sort();
         if (dateKeys.length > 0) data = raw[dateKeys[dateKeys.length - 1]];
-        const confidence = data.Confidence !== undefined ? Math.round(data.Confidence * 100) : null;
-        const el = document.getElementById('cbbi-score');
-        const badge = document.getElementById('cbbi-badge');
-        if (confidence !== null) {
-          el.textContent = confidence + '%';
-          el.style.color = confidence > 80 ? 'var(--accent-red)' : confidence > 50 ? 'var(--accent-gold)' : 'var(--accent-neon-green)';
-          if (badge) { badge.textContent = confidence > 80 ? 'SELL' : confidence > 50 ? 'CAUTION' : 'SAFE'; badge.className = `status-badge status-badge--${confidence > 80 ? 'red' : confidence > 50 ? 'yellow' : 'green'}`; }
-        } else { el.textContent = 'N/A'; }
-      } catch (e) {
-        console.warn('[CBBI]', e.message);
-        document.getElementById('cbbi-score').textContent = 'N/A';
+        if (data.Confidence !== undefined) { setCBBI(Math.round(data.Confidence * 100)); return; }
+      } catch (_) {}
+
+      // Try CORS proxies
+      const proxyUrls = [
+        'https://api.allorigins.win/raw?url=' + encodeURIComponent('https://colintalkscrypto.com/cbbi/data/latest.json'),
+        'https://corsproxy.io/?' + encodeURIComponent('https://colintalkscrypto.com/cbbi/data/latest.json'),
+      ];
+      for (const url of proxyUrls) {
+        try {
+          const res = await fetch(url, { signal: AbortSignal.timeout(6000) });
+          if (!res.ok) continue;
+          const raw = await res.json();
+          let data = raw;
+          const dk = Object.keys(raw).filter(k => /^\d{4}/.test(k)).sort();
+          if (dk.length > 0) data = raw[dk[dk.length - 1]];
+          if (data.Confidence !== undefined) { setCBBI(Math.round(data.Confidence * 100)); return; }
+        } catch (_) { continue; }
       }
+
+      // Try direct (may work in some browsers)
+      try {
+        const res = await fetch('https://colintalkscrypto.com/cbbi/data/latest.json', { signal: AbortSignal.timeout(5000) });
+        if (res.ok) {
+          const raw = await res.json();
+          let data = raw;
+          const dk = Object.keys(raw).filter(k => /^\d{4}/.test(k)).sort();
+          if (dk.length > 0) data = raw[dk[dk.length - 1]];
+          if (data.Confidence !== undefined) { setCBBI(Math.round(data.Confidence * 100)); return; }
+        }
+      } catch (_) {}
+
+      // All failed — show link to check manually
+      const el = document.getElementById('cbbi-score');
+      el.textContent = '--';
+      el.style.fontSize = '1.2rem';
+      document.getElementById('cbbi-label').innerHTML = '<a href="https://colintalkscrypto.com/cbbi/" target="_blank" style="color:var(--accent-neon-purple);">Check CBBI manually</a>';
     }
 
     // --- Extra indicators (Mayer, Fibs, Total3, 50W SMA, Stoch RSI) ---
@@ -918,19 +973,18 @@
         if (badge) { badge.textContent = pctAbove > 0 ? 'ABOVE' : 'BELOW'; badge.className = `status-badge status-badge--${pctAbove > 0 ? 'green' : 'red'}`; }
       }
 
-      // ETH Fib Levels (from ATH ~$4,878)
-      const ethATH = 4878;
+      // ETH Fib Levels (custom levels)
       const fibs = [
-        { level: '0.236', price: Math.round(ethATH * 0.236) },
-        { level: '0.382', price: Math.round(ethATH * 0.382) },
-        { level: '0.5', price: Math.round(ethATH * 0.5) },
-        { level: '0.618', price: Math.round(ethATH * 0.618) },
-        { level: '0.786', price: Math.round(ethATH * 0.786) },
-        { level: '1.0', price: ethATH },
-        { level: '1.618', price: Math.round(ethATH * 1.618) },
-        { level: '2.618', price: Math.round(ethATH * 2.618) },
-        { level: '3.618', price: Math.round(ethATH * 3.618) },
-        { level: '4.236', price: Math.round(ethATH * 4.236) },
+        { level: '0.236', price: 2502 },
+        { level: '0.382', price: 2973 },
+        { level: '0.5', price: 3354 },
+        { level: '0.618', price: 3735 },
+        { level: '0.786', price: 4278 },
+        { level: '1.0', price: 4969 },
+        { level: '1.618', price: 6964 },
+        { level: '2.618', price: 10193 },
+        { level: '3.618', price: 13422 },
+        { level: '4.236', price: 15418 },
       ];
       const fibEl = document.getElementById('eth-fib-content');
       if (fibEl && ethPrices && ethPrices.length > 0) {

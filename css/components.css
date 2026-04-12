@@ -304,8 +304,8 @@
   background: linear-gradient(90deg, transparent, rgba(0, 240, 255, 0.2), rgba(191, 90, 242, 0.2), transparent);
 }
 
-.briefing-section h3 { font-family: 'Orbitron', sans-serif; font-size: 0.85rem; color: var(--accent-neon-blue); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; text-shadow: 0 0 10px rgba(0, 240, 255, 0.2); }
-.briefing-section p, .briefing-section li { font-family: 'Rajdhani', sans-serif; font-size: 0.95rem; color: var(--text-secondary); line-height: 1.7; }
+.briefing-section h3 { font-family: 'Orbitron', sans-serif; font-size: 1.1rem; color: var(--accent-neon-blue); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; text-shadow: 0 0 15px rgba(0, 229, 255, 0.4), 0 0 30px rgba(200, 79, 255, 0.15); }
+.briefing-section p, .briefing-section li { font-family: 'Rajdhani', sans-serif; font-size: 1.1rem; color: var(--text-secondary); line-height: 1.8; }
 .briefing-section ul { list-style: none; padding-left: 0; }
 .briefing-section li::before { content: '\25B8'; color: var(--accent-neon-purple); margin-right: 8px; }
 

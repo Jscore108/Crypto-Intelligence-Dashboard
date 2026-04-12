@@ -321,14 +321,18 @@ const Charts = (() => {
       });
       series.setData(lineData);
 
-      // Fib levels from ATH $4,878
-      const ethATH = 4878;
+      // Fib levels (custom)
       const ethFibs = [
-        { level: '1.0', price: ethATH, color: '#ffffff' },
-        { level: '1.618', price: Math.round(ethATH * 1.618), color: '#ff5500' },
-        { level: '2.618', price: Math.round(ethATH * 2.618), color: '#ff00aa' },
-        { level: '3.618', price: Math.round(ethATH * 3.618), color: '#aa00ff' },
-        { level: '4.236', price: Math.round(ethATH * 4.236), color: '#ff0055' },
+        { level: '0.236', price: 2502, color: '#00e5ff' },
+        { level: '0.382', price: 2973, color: '#00bcd4' },
+        { level: '0.5', price: 3354, color: '#00ffa3' },
+        { level: '0.618', price: 3735, color: '#66ff00' },
+        { level: '0.786', price: 4278, color: '#ffcc00' },
+        { level: '1.0', price: 4969, color: '#ffffff' },
+        { level: '1.618', price: 6964, color: '#ff5500' },
+        { level: '2.618', price: 10193, color: '#ff00aa' },
+        { level: '3.618', price: 13422, color: '#aa00ff' },
+        { level: '4.236', price: 15418, color: '#ff0055' },
       ];
       ethFibs.forEach(f => {
         series.createPriceLine({
@@ -337,19 +341,19 @@ const Charts = (() => {
           lineWidth: 1,
           lineStyle: 2,
           axisLabelVisible: true,
-          title: `${f.level} ($${(f.price/1000).toFixed(1)}K)`,
+          title: `${f.level} ($${f.price.toLocaleString()})`,
         });
       });
 
-      // Sell zone lines
+      // Personal sell zones (separate color — gold)
       [4300, 5000, 6900].forEach(price => {
         series.createPriceLine({
           price: price,
-          color: CHART_COLORS.red,
-          lineWidth: 1,
-          lineStyle: 2,
+          color: '#ffd700',
+          lineWidth: 2,
+          lineStyle: 0,
           axisLabelVisible: true,
-          title: `$${(price / 1000).toFixed(1)}K`,
+          title: `SELL $${(price / 1000).toFixed(1)}K`,
         });
       });
 
