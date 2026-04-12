@@ -81,8 +81,9 @@
         vy: (Math.random() - 0.5) * 0.12,
         glowPhase: Math.random() * 6.28,
         glowSpeed: 0.3 + Math.random() * 0.8,
-        rotation: Math.random() * 6.28,
-        rotSpeed: (Math.random() - 0.5) * 0.003,
+        rotation: (Math.random() - 0.5) * 0.4,
+        rotSpeed: (Math.random() - 0.5) * 0.001,
+        maxTilt: 0.25,
       });
     }
   }
@@ -328,6 +329,8 @@
       b.x += b.vx + Math.sin(t * 0.5 + b.glowPhase) * 0.15;
       b.y += b.vy + Math.cos(t * 0.4 + b.glowPhase) * 0.12;
       b.rotation += b.rotSpeed;
+      if (b.rotation > b.maxTilt) { b.rotation = b.maxTilt; b.rotSpeed *= -1; }
+      if (b.rotation < -b.maxTilt) { b.rotation = -b.maxTilt; b.rotSpeed *= -1; }
 
       // Wrap around
       if (b.x < -40) b.x = W + 40;
