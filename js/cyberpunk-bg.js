@@ -195,85 +195,103 @@
       ctx.save();
       ctx.translate(s.x, s.y + wy);
 
-      // --- Hull: sleek elongated diamond shape ---
+      // --- Hull: wide flat cruiser / flying ship ---
+      // Main body — wide elliptical disc
       ctx.beginPath();
-      ctx.moveTo(d * z * 1.4, 0);              // nose tip
-      ctx.lineTo(d * z * 0.2, -z * 0.18);      // upper forward
-      ctx.lineTo(-d * z * 0.6, -z * 0.14);     // upper rear
-      ctx.lineTo(-d * z * 0.85, 0);             // tail
-      ctx.lineTo(-d * z * 0.6, z * 0.14);      // lower rear
-      ctx.lineTo(d * z * 0.2, z * 0.18);       // lower forward
-      ctx.closePath();
-      const hg = ctx.createLinearGradient(0, -z*0.18, 0, z*0.18);
-      hg.addColorStop(0, 'rgba(40,50,80,0.85)');
-      hg.addColorStop(0.3, 'rgba(25,32,58,0.9)');
-      hg.addColorStop(1, 'rgba(15,20,40,0.85)');
+      ctx.ellipse(d * z * 0.1, 0, z * 1.1, z * 0.3, 0, 0, 6.28);
+      const hg = ctx.createLinearGradient(0, -z*0.3, 0, z*0.3);
+      hg.addColorStop(0, 'rgba(45,55,85,0.8)');
+      hg.addColorStop(0.35, 'rgba(28,35,60,0.9)');
+      hg.addColorStop(0.65, 'rgba(20,26,48,0.9)');
+      hg.addColorStop(1, 'rgba(12,16,32,0.8)');
       ctx.fillStyle = hg;
       ctx.fill();
-      ctx.strokeStyle = `rgba(${c[0]},${c[1]},${c[2]},0.45)`;
-      ctx.lineWidth = 0.8;
+      ctx.strokeStyle = `rgba(${c[0]},${c[1]},${c[2]},0.35)`;
+      ctx.lineWidth = 0.7;
       ctx.stroke();
 
-      // Hull top highlight
+      // Upper deck / bridge (raised section on top)
       ctx.beginPath();
-      ctx.moveTo(d * z * 1.2, -z * 0.01);
-      ctx.quadraticCurveTo(d * z * 0.3, -z * 0.13, -d * z * 0.4, -z * 0.09);
-      ctx.strokeStyle = 'rgba(160,180,240,0.1)';
-      ctx.lineWidth = 1.2;
+      ctx.ellipse(d * z * 0.15, -z * 0.06, z * 0.5, z * 0.14, 0, 0, Math.PI);
+      ctx.fillStyle = 'rgba(35,45,72,0.85)';
+      ctx.fill();
+      ctx.strokeStyle = `rgba(${c[0]},${c[1]},${c[2]},0.25)`;
+      ctx.lineWidth = 0.5;
       ctx.stroke();
 
-      // --- Neon hull stripes ---
+      // Hull top shine
       ctx.beginPath();
-      ctx.moveTo(d * z * 0.8, -z * 0.1);
-      ctx.lineTo(-d * z * 0.5, -z * 0.1);
-      ctx.strokeStyle = `rgba(${c[0]},${c[1]},${c[2]},0.2)`;
-      ctx.lineWidth = 0.6;
-      ctx.stroke();
+      ctx.ellipse(d * z * 0.2, -z * 0.12, z * 0.6, z * 0.06, 0, 0, 6.28);
+      ctx.fillStyle = 'rgba(160,180,240,0.06)';
+      ctx.fill();
+
+      // Neon trim lines along hull
       ctx.beginPath();
-      ctx.moveTo(d * z * 0.8, z * 0.1);
-      ctx.lineTo(-d * z * 0.5, z * 0.1);
+      ctx.ellipse(d * z * 0.1, 0, z * 1.05, z * 0.25, 0, 0, 6.28);
+      ctx.strokeStyle = `rgba(${c[0]},${c[1]},${c[2]},0.12)`;
+      ctx.lineWidth = 0.5;
       ctx.stroke();
 
-      // --- Cockpit ---
+      // Window lights along the side
+      for (let w = -3; w <= 3; w++) {
+        const wx = d * z * (0.1 + w * 0.12);
+        const winBlink = 0.3 + 0.5 * Math.abs(Math.sin(frame * 0.05 + w * 2 + s.wobble));
+        ctx.beginPath(); ctx.arc(wx, z * 0.02, 1.2, 0, 6.28);
+        ctx.fillStyle = `rgba(255,220,140,${0.5 * winBlink})`;
+        ctx.fill();
+      }
+
+      // --- Cockpit / Bridge window ---
       ctx.beginPath();
-      ctx.ellipse(d * z * 0.55, 0, z * 0.14, z * 0.05, 0, 0, 6.28);
-      ctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},0.6)`;
+      ctx.ellipse(d * z * 0.5, -z * 0.08, z * 0.12, z * 0.04, 0, 0, 6.28);
+      ctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},0.55)`;
       ctx.fill();
       ctx.beginPath();
-      ctx.ellipse(d * z * 0.58, -z * 0.012, z * 0.06, z * 0.018, 0, 0, 6.28);
-      ctx.fillStyle = 'rgba(255,255,255,0.25)';
+      ctx.ellipse(d * z * 0.52, -z * 0.09, z * 0.05, z * 0.015, 0, 0, 6.28);
+      ctx.fillStyle = 'rgba(255,255,255,0.2)';
       ctx.fill();
 
       // --- Blinking nav lights ---
       const blink = Math.sin(frame * 0.12 + s.wobble) > 0 ? 0.9 : 0.15;
-      // Nose
-      ctx.beginPath(); ctx.arc(d * z * 1.35, 0, 1.5, 0, 6.28);
+      // Front
+      ctx.beginPath(); ctx.arc(d * z * 1.1, 0, 1.5, 0, 6.28);
       ctx.fillStyle = `rgba(255,255,255,${blink})`; ctx.fill();
-      // Tail
-      ctx.beginPath(); ctx.arc(-d * z * 0.8, 0, 1.5, 0, 6.28);
-      ctx.fillStyle = `rgba(255,42,80,${blink})`; ctx.fill();
-      ctx.beginPath(); ctx.arc(-d * z * 0.8, 0, 4, 0, 6.28);
-      ctx.fillStyle = `rgba(255,42,80,${0.06 * blink})`; ctx.fill();
+      ctx.beginPath(); ctx.arc(d * z * 1.1, 0, 4, 0, 6.28);
+      ctx.fillStyle = `rgba(255,255,255,${0.06 * blink})`; ctx.fill();
+      // Port + starboard
+      ctx.beginPath(); ctx.arc(d * z * 0.1, -z * 0.3, 1.2, 0, 6.28);
+      ctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},${0.8 * blink})`; ctx.fill();
+      ctx.beginPath(); ctx.arc(d * z * 0.1, z * 0.3, 1.2, 0, 6.28);
+      ctx.fillStyle = `rgba(255,42,80,${0.8 * blink})`; ctx.fill();
 
-      // --- Engine exhaust ---
-      const exLen = z * (0.4 + 0.35 * fl);
+      // --- Engine exhaust (rear) ---
+      const exLen = z * (0.35 + 0.3 * fl);
+      // Two engine ports
       ctx.beginPath();
-      ctx.moveTo(-d * z * 0.85, -z * 0.05);
-      ctx.lineTo(-d * (z * 0.85 + exLen), 0);
-      ctx.lineTo(-d * z * 0.85, z * 0.05);
+      ctx.moveTo(-d * z * 0.8, -z * 0.1);
+      ctx.lineTo(-d * (z * 0.8 + exLen), -z * 0.05);
+      ctx.lineTo(-d * z * 0.8, -z * 0.03);
       ctx.closePath();
-      const eg = ctx.createLinearGradient(-d * z * 0.85, 0, -d * (z * 0.85 + exLen), 0);
-      eg.addColorStop(0, `rgba(255,255,255,${0.6 * fl})`);
-      eg.addColorStop(0.3, `rgba(${c[0]},${c[1]},${c[2]},${0.45 * fl})`);
-      eg.addColorStop(1, 'rgba(0,0,0,0)');
-      ctx.fillStyle = eg;
+      const eg1 = ctx.createLinearGradient(-d * z * 0.8, 0, -d * (z * 0.8 + exLen), 0);
+      eg1.addColorStop(0, `rgba(255,255,255,${0.5 * fl})`);
+      eg1.addColorStop(0.3, `rgba(${c[0]},${c[1]},${c[2]},${0.4 * fl})`);
+      eg1.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = eg1;
+      ctx.fill();
+      // Second engine
+      ctx.beginPath();
+      ctx.moveTo(-d * z * 0.8, z * 0.03);
+      ctx.lineTo(-d * (z * 0.8 + exLen), z * 0.05);
+      ctx.lineTo(-d * z * 0.8, z * 0.1);
+      ctx.closePath();
+      ctx.fillStyle = eg1;
       ctx.fill();
 
-      // Engine core glow
-      ctx.beginPath(); ctx.arc(-d * z * 0.85, 0, z * 0.06, 0, 6.28);
+      // Engine core glows
+      ctx.beginPath(); ctx.arc(-d * z * 0.82, -z * 0.065, z * 0.04, 0, 6.28);
       ctx.fillStyle = `rgba(255,255,255,${0.5 * fl})`; ctx.fill();
-      ctx.beginPath(); ctx.arc(-d * z * 0.85, 0, z * 0.14, 0, 6.28);
-      ctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},${0.08 * fl})`; ctx.fill();
+      ctx.beginPath(); ctx.arc(-d * z * 0.82, z * 0.065, z * 0.04, 0, 6.28);
+      ctx.fillStyle = `rgba(255,255,255,${0.5 * fl})`; ctx.fill();
 
       ctx.restore();
       s.x += s.vx;
