@@ -198,58 +198,34 @@
       ctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},0.03)`;
       ctx.fill();
 
-      // === Main wings — extending from sides of fuselage ===
-      // Top wing (extends upward from mid-body)
+      // === Bottom wing only — wide aerodynamic slant ===
       ctx.beginPath();
-      ctx.moveTo(d * z * 0.3, -z * 0.1);       // front root
-      ctx.lineTo(d * z * 0.15, -z * 0.85);      // front tip
-      ctx.lineTo(-d * z * 0.25, -z * 0.8);      // rear tip
-      ctx.lineTo(-d * z * 0.15, -z * 0.1);      // rear root
+      ctx.moveTo(d * z * 0.5, z * 0.1);          // front root (forward on body)
+      ctx.lineTo(d * z * 0.3, z * 1.0);           // front tip (far out)
+      ctx.lineTo(-d * z * 0.5, z * 0.9);          // rear tip (swept back)
+      ctx.lineTo(-d * z * 0.3, z * 0.1);          // rear root
       ctx.closePath();
-      ctx.fillStyle = 'rgba(18, 25, 48, 0.9)';
+      const wingGrad = ctx.createLinearGradient(0, z * 0.1, 0, z * 1.0);
+      wingGrad.addColorStop(0, 'rgba(22, 30, 55, 0.9)');
+      wingGrad.addColorStop(1, 'rgba(12, 18, 38, 0.8)');
+      ctx.fillStyle = wingGrad;
       ctx.fill();
-      ctx.strokeStyle = `rgba(${c[0]},${c[1]},${c[2]},0.35)`;
+      ctx.strokeStyle = `rgba(${c[0]},${c[1]},${c[2]},0.4)`;
       ctx.lineWidth = 0.7; ctx.stroke();
 
-      // Bottom wing (extends downward)
+      // Wing neon edge accent
       ctx.beginPath();
-      ctx.moveTo(d * z * 0.3, z * 0.1);
-      ctx.lineTo(d * z * 0.15, z * 0.85);
-      ctx.lineTo(-d * z * 0.25, z * 0.8);
-      ctx.lineTo(-d * z * 0.15, z * 0.1);
-      ctx.closePath();
-      ctx.fillStyle = 'rgba(18, 25, 48, 0.9)';
-      ctx.fill();
-      ctx.strokeStyle = `rgba(${c[0]},${c[1]},${c[2]},0.35)`;
-      ctx.lineWidth = 0.7; ctx.stroke();
-
-      // Wing accent stripes
-      ctx.beginPath();
-      ctx.moveTo(d * z * 0.25, -z * 0.15);
-      ctx.lineTo(d * z * 0.0, -z * 0.7);
-      ctx.strokeStyle = `rgba(${c[0]},${c[1]},${c[2]},0.2)`;
+      ctx.moveTo(d * z * 0.4, z * 0.15);
+      ctx.lineTo(d * z * 0.3, z * 0.9);
+      ctx.strokeStyle = `rgba(${c[0]},${c[1]},${c[2]},0.25)`;
       ctx.lineWidth = 0.5; ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(d * z * 0.25, z * 0.15);
-      ctx.lineTo(d * z * 0.0, z * 0.7);
-      ctx.stroke();
 
-      // Small rear stabilizer fins
+      // Small rear top stabilizer
       ctx.beginPath();
-      ctx.moveTo(-d * z * 0.55, -z * 0.08);
-      ctx.lineTo(-d * z * 0.7, -z * 0.28);
-      ctx.lineTo(-d * z * 0.75, -z * 0.22);
-      ctx.lineTo(-d * z * 0.65, -z * 0.08);
-      ctx.closePath();
-      ctx.fillStyle = 'rgba(15, 22, 42, 0.85)';
-      ctx.fill();
-      ctx.strokeStyle = `rgba(${c[0]},${c[1]},${c[2]},0.3)`;
-      ctx.lineWidth = 0.5; ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(-d * z * 0.55, z * 0.08);
-      ctx.lineTo(-d * z * 0.7, z * 0.28);
-      ctx.lineTo(-d * z * 0.75, z * 0.22);
-      ctx.lineTo(-d * z * 0.65, z * 0.08);
+      ctx.moveTo(-d * z * 0.5, -z * 0.1);
+      ctx.lineTo(-d * z * 0.6, -z * 0.3);
+      ctx.lineTo(-d * z * 0.7, -z * 0.25);
+      ctx.lineTo(-d * z * 0.65, -z * 0.1);
       ctx.closePath();
       ctx.fillStyle = 'rgba(15, 22, 42, 0.85)';
       ctx.fill();
@@ -297,16 +273,17 @@
       ctx.fillStyle = 'rgba(255,255,255,0.3)';
       ctx.fill();
 
-      // Wing tip lights (blinking) — on wing tips
+      // Wing tip light (bottom wing tip)
       const blink = Math.sin(frame * 0.15 + s.wobble) > 0 ? 1 : 0.2;
-      ctx.beginPath(); ctx.arc(d * z * 0.15, -z * 0.85, 2, 0, 6.28);
+      ctx.beginPath(); ctx.arc(d * z * 0.3, z * 1.0, 2, 0, 6.28);
       ctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},${0.9 * blink})`; ctx.fill();
-      ctx.beginPath(); ctx.arc(d * z * 0.15, -z * 0.85, 5, 0, 6.28);
+      ctx.beginPath(); ctx.arc(d * z * 0.3, z * 1.0, 6, 0, 6.28);
       ctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},${0.1 * blink})`; ctx.fill();
-      ctx.beginPath(); ctx.arc(d * z * 0.15, z * 0.85, 2, 0, 6.28);
+      // Top stabilizer light (red)
+      ctx.beginPath(); ctx.arc(-d * z * 0.6, -z * 0.3, 1.5, 0, 6.28);
       ctx.fillStyle = `rgba(255, 42, 80,${0.9 * blink})`; ctx.fill();
-      ctx.beginPath(); ctx.arc(d * z * 0.15, z * 0.85, 5, 0, 6.28);
-      ctx.fillStyle = `rgba(255, 42, 80,${0.1 * blink})`; ctx.fill();
+      ctx.beginPath(); ctx.arc(-d * z * 0.6, -z * 0.3, 4, 0, 6.28);
+      ctx.fillStyle = `rgba(255, 42, 80,${0.08 * blink})`; ctx.fill();
 
       // === Engine exhaust — wide spread ===
       const exLen = z * (0.6 + 0.5 * fl);
