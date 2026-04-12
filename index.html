@@ -756,7 +756,7 @@
           }
         }).catch(() => {});
 
-        API.getTopCoins(50).then(coins => {
+        API.getTopCoins(50).then(async coins => {
           if (!coins || coins.length === 0) return;
           // Alt season — try real index via proxy first
           let altIdx = null;
