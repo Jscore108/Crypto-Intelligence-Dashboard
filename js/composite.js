@@ -1,37 +1,37 @@
 // ============================================================
 // composite.js — Composite Score (0–100)
-// Weighted average of key indicators
+// 5-indicator weighted average
 // ============================================================
 
 const Composite = (() => {
 
   /**
-   * Calculate composite score from indicator values
+   * Calculate composite score from 5 indicators (all pre-normalized 0-100)
    *
-   * Inputs (all pre-normalized to 0-100):
-   *   fearGreed: Fear & Greed Index (0-100 direct, 100 = extreme greed = sell)
-   *   mvrvScore: MVRV Z-Score mapped to 0-100 (0 = 0, 100 = 6 cycle top)
-   *   piCycleScore: Pi Cycle % toward cross (0 = no signal, 100 = crossed)
-   *   btcDScore: BTC.D mapped to 0-100 (0 = 70%+, 100 = 40% alt season sell)
+   * Fear & Greed:   0-100 direct (100 = extreme greed)       20%
+   * MVRV Z-Score:   [0, 6] → [0, 100] (6 = cycle top)       25%
+   * Puell Multiple: [0, 3] → [0, 100] (3 = sell zone)        20%
+   * Mayer Multiple: [0.5, 2.4] → [0, 100] (2.4 = sell)       15%
+   * BTC Dominance:  [70%, 40%] → [0, 100] inverted (40% = sell) 20%
    *
-   * Weights: F&G 25%, MVRV 30%, Pi Cycle 25%, BTC.D 20%
-   *
-   * Returns 0-100 where:
+   * Returns 0-100:
    *   0-40 = Accumulate (green)
    *   40-60 = Hold (yellow)
    *   60-80 = Distribute (orange)
    *   80-100 = SELL (red)
    */
-  function calculate(fearGreed, mvrvScore, piCycleScore, btcDScore) {
-    const fng = clamp(Number(fearGreed) || 0, 0, 100);
+  function calculate(fngScore, mvrvScore, puellScore, mayerScore, btcDScore) {
+    const fng = clamp(Number(fngScore) || 0, 0, 100);
     const mvrv = clamp(Number(mvrvScore) || 0, 0, 100);
-    const piCycle = clamp(Number(piCycleScore) || 0, 0, 100);
+    const puell = clamp(Number(puellScore) || 0, 0, 100);
+    const mayer = clamp(Number(mayerScore) || 0, 0, 100);
     const btcD = clamp(Number(btcDScore) || 0, 0, 100);
 
     const score = (
-      fng * 0.25 +
-      mvrv * 0.30 +
-      piCycle * 0.25 +
+      fng * 0.20 +
+      mvrv * 0.25 +
+      puell * 0.20 +
+      mayer * 0.15 +
       btcD * 0.20
     );
 

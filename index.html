@@ -152,7 +152,7 @@
         <div class="hex-bubble__inner">
           <div class="hex-bubble__label">Puell</div>
           <div class="hex-bubble__value" id="puell-sell-val">--</div>
-          <div class="hex-bubble__target">sell @ 2.0</div>
+          <div class="hex-bubble__target">sell @ 3.0</div>
           <div class="hex-bubble__pct" id="puell-sell-pct"></div>
         </div>
       </div>
@@ -370,7 +370,7 @@
     const INDICATOR_SELL_LEVELS = [
       { name: 'Fear & Greed', sellAbove: 75, label: '> 75 = Sell Zone' },
       { name: 'MVRV Z-Score', sellAbove: 5, label: '> 5 = Cycle Top' },
-      { name: 'Puell Multiple', sellAbove: 2, label: '> 2 = Sell Zone' },
+      { name: 'Puell Multiple', sellAbove: 3, label: '> 3 = Cycle Top' },
       { name: 'BTC Dominance', sellAbove: 45, label: '< 45% = Alt Season' },
       { name: 'Pi Cycle', sellAbove: 1.0, label: 'Ratio >= 1.0 = Top' },
     ];
@@ -480,18 +480,24 @@
         setCardGlow('card-puell', puellZone.color);
       }
 
-      // --- Composite Score ---
-      // Fear & Greed: 0-100 direct (100 = sell)
-      // MVRV: map [0, 6] to [0, 100] (6 = cycle top = 100/100)
-      // Pi Cycle: % toward cross (ratio / 1.0 * 100)
-      // BTC.D: map [70%, 40%] to [0, 100] INVERTED (40% = alt season = 100/100 sell)
+      // --- Composite Score (5 indicators) ---
+      // Fear & Greed: 0-100 direct (20%)
+      // MVRV: [0, 6] → [0, 100] (25%)
+      // Puell: [0, 3] → [0, 100] (20%)
+      // Mayer: [0.5, 2.4] → [0, 100] (15%)
+      // BTC.D: [70%, 40%] → [0, 100] inverted (20%)
       const btcD = Number(btcDominance) || 50;
+      const sma200 = closingPrices.length >= 200 ? Indicators.SMA(closingPrices, 200) : null;
+      const btcPrice = closingPrices[closingPrices.length - 1];
+      const mayerVal = sma200 ? btcPrice / sma200 : null;
+
       const fngScore = Math.max(0, Math.min(100, Number(fngVal) || 0));
       const mvrvScore = Math.max(0, Math.min(100, (estMvrv !== null ? estMvrv / 6 : 0) * 100));
-      const piCycleScore = Math.max(0, Math.min(100, ((piCycle?.ratio || 0) - 0.7) / 0.3 * 100));
+      const puellScore = Math.max(0, Math.min(100, (puellEst !== null ? puellEst / 3 : 0) * 100));
+      const mayerScore = Math.max(0, Math.min(100, (mayerVal !== null ? (mayerVal - 0.5) / 1.9 : 0) * 100));
       const btcDScore = Math.max(0, Math.min(100, ((70 - btcD) / 30) * 100));
 
-      const compositeScore = Composite.calculate(fngScore, mvrvScore, piCycleScore, btcDScore);
+      const compositeScore = Composite.calculate(fngScore, mvrvScore, puellScore, mayerScore, btcDScore);
       Composite.renderGauge(document.getElementById('composite-gauge'), compositeScore);
       document.getElementById('ticker-composite').textContent = compositeScore + '/100';
       const compZone = Composite.getZone(compositeScore);
@@ -499,9 +505,10 @@
 
       // Render breakdown
       renderCompositeBreakdown({
-        'Fear & Greed': { value: fngScore, weight: 25, raw: fngVal + '/100', contribution: (fngScore * 0.25).toFixed(1) },
-        'MVRV Z-Score': { value: mvrvScore, weight: 30, raw: (estMvrv !== null ? estMvrv.toFixed(2) : '--') + ' / 6', contribution: (mvrvScore * 0.30).toFixed(1) },
-        'Pi Cycle Top': { value: piCycleScore, weight: 25, raw: (piCycle?.ratio ? piCycle.ratio.toFixed(4) : '--') + ' / 1.0', contribution: (piCycleScore * 0.25).toFixed(1) },
+        'Fear & Greed': { value: fngScore, weight: 20, raw: fngVal + '/100', contribution: (fngScore * 0.20).toFixed(1) },
+        'MVRV Z-Score': { value: mvrvScore, weight: 25, raw: (estMvrv !== null ? estMvrv.toFixed(2) : '--') + ' / 6', contribution: (mvrvScore * 0.25).toFixed(1) },
+        'Puell Multiple': { value: puellScore, weight: 20, raw: (puellEst !== null ? puellEst.toFixed(2) : '--') + ' / 3', contribution: (puellScore * 0.20).toFixed(1) },
+        'Mayer Multiple': { value: mayerScore, weight: 15, raw: (mayerVal !== null ? mayerVal.toFixed(2) : '--') + ' / 2.4', contribution: (mayerScore * 0.15).toFixed(1) },
         'BTC.D': { value: btcDScore, weight: 20, raw: btcD.toFixed(1) + '% → 40%', contribution: (btcDScore * 0.20).toFixed(1) },
       }, compositeScore);
 
@@ -509,7 +516,7 @@
       updateSellHexBars({
         fng: { value: Number(fngVal) || 0, target: 75 },
         mvrv: { value: estMvrv, target: 5 },
-        puell: { value: puellEst, target: 2 },
+        puell: { value: puellEst, target: 3 },
         btcd: { value: btcD, target: 45 },
         picycle: { value: piCycle?.ratio || 0, target: 1.0 },
       });
