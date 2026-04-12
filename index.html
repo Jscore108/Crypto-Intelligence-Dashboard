@@ -768,11 +768,10 @@
           // Alt season — try real index via proxy first
           let altIdx = null;
           try {
-            const altRes = await fetch('/api/altseason');
-            if (altRes.ok) {
+            const altRes = await fetch('/api/altseason', { signal: AbortSignal.timeout(4000) });
+            if (altRes.ok && (altRes.headers.get('content-type') || '').includes('json')) {
               const altData = await altRes.json();
               if (altData && !altData.error) {
-                // blockchaincenter returns various formats
                 altIdx = altData.altcoinIndex || altData.index || altData.value || (typeof altData === 'number' ? altData : null);
                 if (altIdx !== null) altIdx = Math.round(Number(altIdx));
               }
