@@ -396,11 +396,12 @@
 
     // --- Render indicators from BTC history (heavy, runs in background) ---
     function renderIndicators(closingPrices, fngVal, btcDominance) {
-      let mvrvNorm = 50, piCycleVal = 20;
+      let mvrvNorm = 50, piCycleVal = 20, rsiVal = 50;
 
       // RSI (still shown as indicator card, just not in composite)
       const rsi = Indicators.RSI(closingPrices, 14);
       if (rsi !== null) {
+        rsiVal = rsi;
         const rsiColor = rsi > 70 ? 'red' : rsi < 30 ? 'green' : 'yellow';
         const rsiLabel = rsi > 70 ? 'Overbought' : rsi < 30 ? 'Oversold' : 'Neutral';
         setCard('rsi', rsi.toFixed(1), rsiLabel, rsiColor);
