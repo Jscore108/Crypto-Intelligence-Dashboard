@@ -491,30 +491,34 @@
       }
 
       // --- Composite Score ---
-      // Uses: Fear & Greed (25%), MVRV (30%), Pi Cycle Top (25%), BTC Dominance (20%)
+      // Fear & Greed: 0-100 direct (100 = sell)
+      // MVRV: map [0, 6] to [0, 100] (6 = cycle top = 100/100)
+      // Pi Cycle: % toward cross (ratio / 1.0 * 100)
+      // BTC.D: map [70%, 40%] to [0, 100] INVERTED (40% = alt season = 100/100 sell)
       const btcD = Number(btcDominance) || 50;
-      const compositeScore = Composite.calculate(fngVal, mvrvNorm, piCycleVal, btcD);
+      const fngScore = Math.max(0, Math.min(100, Number(fngVal) || 0));
+      const mvrvScore = Math.max(0, Math.min(100, (estMvrv !== null ? estMvrv / 6 : 0) * 100));
+      const piCycleScore = Math.max(0, Math.min(100, (piCycle?.ratio || 0) * 100));
+      const btcDScore = Math.max(0, Math.min(100, ((70 - btcD) / 30) * 100));
+
+      const compositeScore = Composite.calculate(fngScore, mvrvScore, piCycleScore, btcDScore);
       Composite.renderGauge(document.getElementById('composite-gauge'), compositeScore);
       document.getElementById('ticker-composite').textContent = compositeScore + '/100';
       const compZone = Composite.getZone(compositeScore);
       document.getElementById('ticker-composite').style.color = compZone.color;
 
-      // BTC Dominance normalized for breakdown display: map [40, 70] to [0, 100]
-      const btcDNorm = Math.max(0, Math.min(100, ((btcD - 40) / 30) * 100));
-      const fngNorm = Math.max(0, Math.min(100, Number(fngVal) || 50));
-
       // Render breakdown
       renderCompositeBreakdown({
-        'Fear & Greed': { value: fngNorm, weight: 25, raw: fngVal, contribution: (fngNorm * 0.25).toFixed(1) },
-        'MVRV Z-Score': { value: mvrvNorm, weight: 30, raw: estMvrv !== null ? estMvrv.toFixed(2) : '--', contribution: (mvrvNorm * 0.30).toFixed(1) },
-        'Pi Cycle Top': { value: piCycleVal, weight: 25, raw: piCycle?.ratio ? piCycle.ratio.toFixed(4) : '--', contribution: (piCycleVal * 0.25).toFixed(1) },
-        'BTC.D': { value: btcDNorm, weight: 20, raw: btcD.toFixed(1) + '%', contribution: (btcDNorm * 0.20).toFixed(1) },
+        'Fear & Greed': { value: fngScore, weight: 25, raw: fngVal + '/100', contribution: (fngScore * 0.25).toFixed(1) },
+        'MVRV Z-Score': { value: mvrvScore, weight: 30, raw: (estMvrv !== null ? estMvrv.toFixed(2) : '--') + ' / 6', contribution: (mvrvScore * 0.30).toFixed(1) },
+        'Pi Cycle Top': { value: piCycleScore, weight: 25, raw: (piCycle?.ratio ? piCycle.ratio.toFixed(4) : '--') + ' / 1.0', contribution: (piCycleScore * 0.25).toFixed(1) },
+        'BTC.D': { value: btcDScore, weight: 20, raw: btcD.toFixed(1) + '% → 40%', contribution: (btcDScore * 0.20).toFixed(1) },
       }, compositeScore);
 
       // Update hex stat bars with sell level data + % toward goal
       updateSellHexBars({
         fng: { value: Number(fngVal) || 0, target: 75 },
-        mvrv: { value: estMvrv, target: 7 },
+        mvrv: { value: estMvrv, target: 5 },
         puell: { value: puellEst, target: 2 },
         btcd: { value: btcD, target: 45 },
         picycle: { value: piCycle?.ratio || 0, target: 1.0 },
