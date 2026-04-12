@@ -826,16 +826,22 @@
     // We calculate a CBBI-style confidence score from the indicators we already have.
     // The real CBBI uses 9 on-chain metrics. We estimate the ones we can and show them.
     function updateCBBI(indicatorData) {
+      // Normalization calibrated to real cycle ranges:
+      // Pi Cycle ratio: 0.6=early, 0.85=mid, 1.0=top → map [0.5, 1.05] to [0, 1]
+      // MVRV Z-Score: -1=deep buy, 2=mid, 7=top → map [-1, 7] to [0, 1]
+      // Puell: 0.3=buy, 1.0=mid, 2.5=sell → map [0.2, 2.5] to [0, 1]
+      // Price/200SMA: 0.7=bear, 1.2=mid, 2.5=overheated → map [0.7, 2.5] to [0, 1]
+      // RSI: 30=oversold, 50=mid, 75=overbought → map [25, 80] to [0, 1]
       const metrics = [
-        { name: 'Pi Cycle Top', fillId: 'cbbi-pi', valId: 'cbbi-pi-val', value: indicatorData.piCycleRatio, normalize: v => Math.min(1, Math.max(0, v)) },
-        { name: 'RUPL/NUPL', fillId: 'cbbi-rupl', valId: 'cbbi-rupl-val', value: indicatorData.mvrv, normalize: v => Math.min(1, Math.max(0, (v + 1) / 9)) },
-        { name: 'RHODL Ratio', fillId: 'cbbi-rhodl', valId: 'cbbi-rhodl-val', value: indicatorData.mvrv, normalize: v => Math.min(1, Math.max(0, (v + 0.5) / 8)) },
-        { name: 'Puell Multiple', fillId: 'cbbi-puell', valId: 'cbbi-puell-val', value: indicatorData.puell, normalize: v => Math.min(1, Math.max(0, v / 3)) },
-        { name: '2Y MA Multiplier', fillId: 'cbbi-2yma', valId: 'cbbi-2yma-val', value: indicatorData.priceVs200SMA, normalize: v => Math.min(1, Math.max(0, (v - 0.5) / 4)) },
-        { name: 'Trolololo Log', fillId: 'cbbi-trolo', valId: 'cbbi-trolo-val', value: indicatorData.priceVs200SMA, normalize: v => Math.min(1, Math.max(0, (v - 0.3) / 3.5)) },
-        { name: 'MVRV Z-Score', fillId: 'cbbi-mvrv', valId: 'cbbi-mvrv-val', value: indicatorData.mvrv, normalize: v => Math.min(1, Math.max(0, (v + 2) / 12)) },
-        { name: 'Reserve Risk', fillId: 'cbbi-risk', valId: 'cbbi-risk-val', value: indicatorData.rsi, normalize: v => Math.min(1, Math.max(0, (v - 20) / 80)) },
-        { name: 'Woobull Top Cap', fillId: 'cbbi-woobull', valId: 'cbbi-woobull-val', value: indicatorData.priceVs200SMA, normalize: v => Math.min(1, Math.max(0, (v - 0.5) / 5)) },
+        { name: 'Pi Cycle Top', fillId: 'cbbi-pi', valId: 'cbbi-pi-val', value: indicatorData.piCycleRatio, normalize: v => Math.min(1, Math.max(0, (v - 0.5) / 0.55)) },
+        { name: 'RUPL/NUPL', fillId: 'cbbi-rupl', valId: 'cbbi-rupl-val', value: indicatorData.mvrv, normalize: v => Math.min(1, Math.max(0, (v + 1) / 6)) },
+        { name: 'RHODL Ratio', fillId: 'cbbi-rhodl', valId: 'cbbi-rhodl-val', value: indicatorData.priceVs200SMA, normalize: v => Math.min(1, Math.max(0, (v - 0.6) / 1.6)) },
+        { name: 'Puell Multiple', fillId: 'cbbi-puell', valId: 'cbbi-puell-val', value: indicatorData.puell, normalize: v => Math.min(1, Math.max(0, (v - 0.2) / 2.3)) },
+        { name: '2Y MA Multiplier', fillId: 'cbbi-2yma', valId: 'cbbi-2yma-val', value: indicatorData.priceVs200SMA, normalize: v => Math.min(1, Math.max(0, (v - 0.7) / 1.8)) },
+        { name: 'Trolololo Log', fillId: 'cbbi-trolo', valId: 'cbbi-trolo-val', value: indicatorData.priceVs200SMA, normalize: v => Math.min(1, Math.max(0, (v - 0.65) / 1.7)) },
+        { name: 'MVRV Z-Score', fillId: 'cbbi-mvrv', valId: 'cbbi-mvrv-val', value: indicatorData.mvrv, normalize: v => Math.min(1, Math.max(0, (v + 1) / 8)) },
+        { name: 'Reserve Risk', fillId: 'cbbi-risk', valId: 'cbbi-risk-val', value: indicatorData.rsi, normalize: v => Math.min(1, Math.max(0, (v - 25) / 55)) },
+        { name: 'Woobull Top Cap', fillId: 'cbbi-woobull', valId: 'cbbi-woobull-val', value: indicatorData.priceVs200SMA, normalize: v => Math.min(1, Math.max(0, (v - 0.7) / 2.0)) },
       ];
 
       let totalScore = 0;
