@@ -811,61 +811,100 @@
 
     // --- CBBI Fetch & Render ---
     async function loadCBBI() {
-      const metricMap = {
-        'Pi Cycle Top': { fillId: 'cbbi-pi', valId: 'cbbi-pi-val' },
-        'RUPL/NUPL': { fillId: 'cbbi-rupl', valId: 'cbbi-rupl-val' },
-        'RHODL Ratio': { fillId: 'cbbi-rhodl', valId: 'cbbi-rhodl-val' },
-        'Puell Multiple': { fillId: 'cbbi-puell', valId: 'cbbi-puell-val' },
-        '2Y MA Multiplier': { fillId: 'cbbi-2yma', valId: 'cbbi-2yma-val' },
-        'Trolololo Log': { fillId: 'cbbi-trolo', valId: 'cbbi-trolo-val' },
-        'MVRV Z-Score': { fillId: 'cbbi-mvrv', valId: 'cbbi-mvrv-val' },
-        'Reserve Risk': { fillId: 'cbbi-risk', valId: 'cbbi-risk-val' },
-        'Woobull Top Cap': { fillId: 'cbbi-woobull', valId: 'cbbi-woobull-val' },
-      };
+      // Map metric keys (CBBI API uses these exact keys)
+      const metricKeys = [
+        { key: 'PiCycle', name: 'Pi Cycle Top', fillId: 'cbbi-pi', valId: 'cbbi-pi-val' },
+        { key: 'NUPL', name: 'RUPL/NUPL', fillId: 'cbbi-rupl', valId: 'cbbi-rupl-val' },
+        { key: 'RHODL', name: 'RHODL Ratio', fillId: 'cbbi-rhodl', valId: 'cbbi-rhodl-val' },
+        { key: 'Puell', name: 'Puell Multiple', fillId: 'cbbi-puell', valId: 'cbbi-puell-val' },
+        { key: '2YMA', name: '2Y MA Multiplier', fillId: 'cbbi-2yma', valId: 'cbbi-2yma-val' },
+        { key: 'Trolololo', name: 'Trolololo Log', fillId: 'cbbi-trolo', valId: 'cbbi-trolo-val' },
+        { key: 'MVRV', name: 'MVRV Z-Score', fillId: 'cbbi-mvrv', valId: 'cbbi-mvrv-val' },
+        { key: 'ReserveRisk', name: 'Reserve Risk', fillId: 'cbbi-risk', valId: 'cbbi-risk-val' },
+        { key: 'Woobull', name: 'Woobull Top Cap', fillId: 'cbbi-woobull', valId: 'cbbi-woobull-val' },
+      ];
 
-      try {
-        // Try fetching CBBI data
-        const res = await fetch('https://colintalkscrypto.com/cbbi/data/latest.json');
-        if (!res.ok) throw new Error('CBBI API failed');
-        const data = await res.json();
+      // Try multiple endpoints and CORS proxies
+      const urls = [
+        'https://colintalkscrypto.com/cbbi/data/latest.json',
+        'https://api.allorigins.win/raw?url=' + encodeURIComponent('https://colintalkscrypto.com/cbbi/data/latest.json'),
+        'https://corsproxy.io/?' + encodeURIComponent('https://colintalkscrypto.com/cbbi/data/latest.json'),
+      ];
 
-        // Confidence score
-        const confidence = data.Confidence !== undefined ? Math.round(data.Confidence * 100) : null;
-        if (confidence !== null) {
-          const scoreEl = document.getElementById('cbbi-score');
-          scoreEl.textContent = confidence + '%';
-          // Color the ring based on score
-          const ring = document.getElementById('cbbi-score-ring');
-          const pct = confidence;
-          ring.style.background = `conic-gradient(
-            ${pct > 80 ? 'var(--accent-red)' : pct > 50 ? 'var(--accent-gold)' : 'var(--accent-neon-green)'} 0%,
-            ${pct > 80 ? 'var(--accent-red)' : pct > 50 ? 'var(--accent-gold)' : 'var(--accent-neon-green)'} ${pct}%,
-            rgba(100,120,200,0.1) ${pct}%,
-            rgba(100,120,200,0.1) 100%
-          )`;
-          scoreEl.style.color = pct > 80 ? 'var(--accent-red)' : pct > 50 ? 'var(--accent-gold)' : 'var(--accent-neon-green)';
+      let data = null;
+      for (const url of urls) {
+        try {
+          const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
+          if (!res.ok) continue;
+          const json = await res.json();
+          if (json && typeof json === 'object' && Object.keys(json).length > 2) {
+            data = json;
+            break;
+          }
+        } catch (_) { continue; }
+      }
+
+      if (!data) {
+        console.warn('[CBBI] All fetch attempts failed');
+        document.getElementById('cbbi-score').textContent = 'N/A';
+        document.getElementById('cbbi-score').style.fontSize = '1.2rem';
+        return;
+      }
+
+      // Find confidence score — could be keyed various ways
+      let confidence = null;
+      // The CBBI JSON has date keys with nested values, latest entry is what we need
+      // Structure might be: { "2024-01-01": { Confidence: 0.45, ... }, ... }
+      // Or flat: { Confidence: 0.45, PiCycle: 0.2, ... }
+
+      if (data.Confidence !== undefined) {
+        confidence = data.Confidence;
+      } else {
+        // Try to get latest date entry
+        const dateKeys = Object.keys(data).filter(k => /^\d{4}/.test(k)).sort();
+        if (dateKeys.length > 0) {
+          const latest = data[dateKeys[dateKeys.length - 1]];
+          if (latest && latest.Confidence !== undefined) {
+            data = latest; // use the latest entry
+            confidence = latest.Confidence;
+          }
         }
+      }
 
-        // Sub-indicators
-        for (const [name, ids] of Object.entries(metricMap)) {
-          const val = data[name];
-          if (val !== undefined && val !== null) {
-            const pct = Math.round(val * 100);
-            const fillEl = document.getElementById(ids.fillId);
-            const valEl = document.getElementById(ids.valId);
-            if (fillEl) fillEl.style.width = pct + '%';
-            if (valEl) {
-              valEl.textContent = pct + '%';
-              valEl.style.color = pct > 80 ? 'var(--accent-red)' : pct > 50 ? 'var(--accent-gold)' : 'var(--accent-neon-green)';
+      // Render confidence ring
+      if (confidence !== null) {
+        const pct = Math.round(confidence * 100);
+        const scoreEl = document.getElementById('cbbi-score');
+        scoreEl.textContent = pct + '%';
+        const ring = document.getElementById('cbbi-score-ring');
+        const clr = pct > 80 ? 'var(--accent-red)' : pct > 50 ? 'var(--accent-gold)' : 'var(--accent-neon-green)';
+        ring.style.background = `conic-gradient(${clr} 0%, ${clr} ${pct}%, rgba(100,120,200,0.1) ${pct}%, rgba(100,120,200,0.1) 100%)`;
+        scoreEl.style.color = clr;
+      }
+
+      // Render sub-indicators — try multiple key formats
+      metricKeys.forEach(m => {
+        let val = data[m.key] ?? data[m.name] ?? null;
+        // Also try lowercase, camelCase variants
+        if (val === null) {
+          for (const k of Object.keys(data)) {
+            if (k.toLowerCase().replace(/[\s_]/g, '') === m.key.toLowerCase().replace(/[\s_]/g, '')) {
+              val = data[k];
+              break;
             }
           }
         }
-      } catch (e) {
-        console.warn('[CBBI] Fetch failed, using estimated values:', e.message);
-        // Fallback: show N/A
-        document.getElementById('cbbi-score').textContent = 'N/A';
-        document.getElementById('cbbi-score').style.fontSize = '1.2rem';
-      }
+        if (val !== null && val !== undefined) {
+          const pct = Math.round(Number(val) * 100);
+          const fillEl = document.getElementById(m.fillId);
+          const valEl = document.getElementById(m.valId);
+          if (fillEl) fillEl.style.width = Math.min(100, Math.max(0, pct)) + '%';
+          if (valEl) {
+            valEl.textContent = pct + '%';
+            valEl.style.color = pct > 80 ? 'var(--accent-red)' : pct > 50 ? 'var(--accent-gold)' : 'var(--accent-neon-green)';
+          }
+        }
+      });
     }
 
     (async function init() {
