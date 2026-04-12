@@ -498,7 +498,7 @@
       const btcD = Number(btcDominance) || 50;
       const fngScore = Math.max(0, Math.min(100, Number(fngVal) || 0));
       const mvrvScore = Math.max(0, Math.min(100, (estMvrv !== null ? estMvrv / 6 : 0) * 100));
-      const piCycleScore = Math.max(0, Math.min(100, (piCycle?.ratio || 0) * 100));
+      const piCycleScore = Math.max(0, Math.min(100, ((piCycle?.ratio || 0) - 0.7) / 0.3 * 100));
       const btcDScore = Math.max(0, Math.min(100, ((70 - btcD) / 30) * 100));
 
       const compositeScore = Composite.calculate(fngScore, mvrvScore, piCycleScore, btcDScore);
