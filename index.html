@@ -765,18 +765,38 @@
 
         API.getTopCoins(50).then(async coins => {
           if (!coins || coins.length === 0) return;
-          // Alt season — try real index via proxy first
+          // Alt season — try multiple sources for real index
           let altIdx = null;
-          try {
-            const altRes = await fetch('/api/altseason', { signal: AbortSignal.timeout(4000) });
-            if (altRes.ok && (altRes.headers.get('content-type') || '').includes('json')) {
-              const altData = await altRes.json();
-              if (altData && !altData.error) {
-                altIdx = altData.altcoinIndex || altData.index || altData.value || (typeof altData === 'number' ? altData : null);
-                if (altIdx !== null) altIdx = Math.round(Number(altIdx));
+
+          // Try blockchaincenter via CORS proxies
+          const altUrls = [
+            '/api/altseason',
+            'https://api.allorigins.win/raw?url=' + encodeURIComponent('https://api.blockchaincenter.net/api/altcoin-season-index'),
+            'https://corsproxy.io/?' + encodeURIComponent('https://api.blockchaincenter.net/api/altcoin-season-index'),
+            'https://api.blockchaincenter.net/api/altcoin-season-index',
+          ];
+          for (const url of altUrls) {
+            if (altIdx !== null) break;
+            try {
+              const r = await fetch(url, { signal: AbortSignal.timeout(4000) });
+              if (!r.ok) continue;
+              const ct = r.headers.get('content-type') || '';
+              if (!ct.includes('json')) continue;
+              const d = await r.json();
+              if (d && !d.error) {
+                // Try various response shapes
+                const v = d.altcoinIndex ?? d.index ?? d.value ?? d.data?.index ?? d.data?.value ?? (typeof d === 'number' ? d : null);
+                if (v !== null && !isNaN(v)) { altIdx = Math.round(Number(v)); break; }
+                // Maybe it's an object with date keys
+                const keys = Object.keys(d).filter(k => /^\d/.test(k)).sort();
+                if (keys.length > 0) {
+                  const latest = d[keys[keys.length - 1]];
+                  if (typeof latest === 'number') { altIdx = Math.round(latest); break; }
+                  if (latest?.index !== undefined) { altIdx = Math.round(latest.index); break; }
+                }
               }
-            }
-          } catch (_) {}
+            } catch (_) { continue; }
+          }
 
           // Fallback: calculate from CoinGecko data
           const btc = coins.find(c => c.id === 'bitcoin');
