@@ -238,16 +238,6 @@
         <div class="indicator-card__label" id="mayer-label">sell &gt; 2.4</div>
       </div>
 
-      <!-- CBBI -->
-      <div class="indicator-card" id="card-cbbi">
-        <div class="indicator-card__header">
-          <span class="indicator-card__title">CBBI Index</span>
-          <span class="status-badge" id="cbbi-badge">--</span>
-        </div>
-        <div class="indicator-card__value" id="cbbi-score">--</div>
-        <div class="indicator-card__label" id="cbbi-label"><a href="https://colintalkscrypto.com/cbbi/" target="_blank" rel="noopener" style="color:var(--accent-neon-purple);font-size:0.65rem;">colintalkscrypto.com</a></div>
-      </div>
-
       <!-- ETH Fib Levels -->
       <div class="indicator-card" id="card-eth-fib">
         <div class="indicator-card__header">
@@ -768,9 +758,23 @@
 
         API.getTopCoins(50).then(coins => {
           if (!coins || coins.length === 0) return;
-          // Alt season — use 7d change for more accurate reading
+          // Alt season — try real index via proxy first
+          let altIdx = null;
+          try {
+            const altRes = await fetch('/api/altseason');
+            if (altRes.ok) {
+              const altData = await altRes.json();
+              if (altData && !altData.error) {
+                // blockchaincenter returns various formats
+                altIdx = altData.altcoinIndex || altData.index || altData.value || (typeof altData === 'number' ? altData : null);
+                if (altIdx !== null) altIdx = Math.round(Number(altIdx));
+              }
+            }
+          } catch (_) {}
+
+          // Fallback: calculate from CoinGecko data
           const btc = coins.find(c => c.id === 'bitcoin');
-          if (btc) {
+          if (altIdx === null && btc) {
             const btcChange7d = btc.price_change_percentage_7d_in_currency || btc.price_change_percentage_24h || 0;
             const alts = coins.filter(c => c.id !== 'bitcoin' && c.id !== 'tether' && c.id !== 'usd-coin' && c.id !== 'staked-ether');
             let outperform = 0;
@@ -778,11 +782,13 @@
               const altChange = c.price_change_percentage_7d_in_currency || c.price_change_percentage_24h || 0;
               if (altChange > btcChange7d) outperform++;
             });
-            // Scale down slightly — 24h/7d is noisier than 90d
             const rawIdx = Math.round((outperform / alts.length) * 100);
-            const idx = Math.round(rawIdx * 0.65);
-            const zone = Indicators.altSeasonZone(idx);
-            setCard('altseason', idx + '/100', zone.label, zone.color);
+            altIdx = Math.round(rawIdx * 0.55);
+          }
+
+          if (altIdx !== null) {
+            const zone = Indicators.altSeasonZone(altIdx);
+            setCard('altseason', altIdx + '/100', zone.label, zone.color);
             setBadge('altseason-badge', zone.label, zone.color);
           }
           // Gainers / Losers
@@ -905,64 +911,6 @@
       if (el) el.textContent = countdown + 's';
     }
 
-    // --- CBBI — just the confidence % via proxy ---
-    async function loadCBBI() {
-      function setCBBI(confidence) {
-        const el = document.getElementById('cbbi-score');
-        const badge = document.getElementById('cbbi-badge');
-        el.textContent = confidence + '%';
-        el.style.color = confidence > 80 ? 'var(--accent-red)' : confidence > 50 ? 'var(--accent-gold)' : 'var(--accent-neon-green)';
-        if (badge) { badge.textContent = confidence > 80 ? 'SELL' : confidence > 50 ? 'CAUTION' : 'SAFE'; badge.className = `status-badge status-badge--${confidence > 80 ? 'red' : confidence > 50 ? 'yellow' : 'green'}`; }
-      }
-
-      // Try serverless proxy first
-      try {
-        const res = await fetch('/api/cbbi');
-        if (!res.ok) throw new Error('Proxy failed');
-        const raw = await res.json();
-        if (raw.error) throw new Error(raw.error);
-        let data = raw;
-        const dateKeys = Object.keys(raw).filter(k => /^\d{4}/.test(k)).sort();
-        if (dateKeys.length > 0) data = raw[dateKeys[dateKeys.length - 1]];
-        if (data.Confidence !== undefined) { setCBBI(Math.round(data.Confidence * 100)); return; }
-      } catch (_) {}
-
-      // Try CORS proxies
-      const proxyUrls = [
-        'https://api.allorigins.win/raw?url=' + encodeURIComponent('https://colintalkscrypto.com/cbbi/data/latest.json'),
-        'https://corsproxy.io/?' + encodeURIComponent('https://colintalkscrypto.com/cbbi/data/latest.json'),
-      ];
-      for (const url of proxyUrls) {
-        try {
-          const res = await fetch(url, { signal: AbortSignal.timeout(6000) });
-          if (!res.ok) continue;
-          const raw = await res.json();
-          let data = raw;
-          const dk = Object.keys(raw).filter(k => /^\d{4}/.test(k)).sort();
-          if (dk.length > 0) data = raw[dk[dk.length - 1]];
-          if (data.Confidence !== undefined) { setCBBI(Math.round(data.Confidence * 100)); return; }
-        } catch (_) { continue; }
-      }
-
-      // Try direct (may work in some browsers)
-      try {
-        const res = await fetch('https://colintalkscrypto.com/cbbi/data/latest.json', { signal: AbortSignal.timeout(5000) });
-        if (res.ok) {
-          const raw = await res.json();
-          let data = raw;
-          const dk = Object.keys(raw).filter(k => /^\d{4}/.test(k)).sort();
-          if (dk.length > 0) data = raw[dk[dk.length - 1]];
-          if (data.Confidence !== undefined) { setCBBI(Math.round(data.Confidence * 100)); return; }
-        }
-      } catch (_) {}
-
-      // All failed — show link to check manually
-      const el = document.getElementById('cbbi-score');
-      el.textContent = '--';
-      el.style.fontSize = '1.2rem';
-      document.getElementById('cbbi-label').innerHTML = '<a href="https://colintalkscrypto.com/cbbi/" target="_blank" style="color:var(--accent-neon-purple);">Check CBBI manually</a>';
-    }
-
     // --- Extra indicators (Mayer, Fibs, Total3, 50W SMA, Stoch RSI) ---
     function renderExtraIndicators(closingPrices, ethPrices) {
       const btcPrice = closingPrices[closingPrices.length - 1];
@@ -1033,7 +981,6 @@
 
     (async function init() {
       await updateDashboard();
-      loadCBBI();
       // Full dashboard refresh every 60s
       setInterval(updateDashboard, 60000);
       // Fast price refresh every 15s
@@ -1041,6 +988,32 @@
       // Countdown tick every 1s
       setInterval(tickCountdown, 1000);
     })();
+
+    // --- Clickable indicator cards → external charts ---
+    const indicatorLinks = {
+      'card-fng': 'https://alternative.me/crypto/fear-and-greed-index/',
+      'card-mvrv': 'https://www.lookintobitcoin.com/charts/mvrv-zscore/',
+      'card-picycle': 'https://www.lookintobitcoin.com/charts/pi-cycle-top-indicator/',
+      'card-rsi': 'https://www.tradingview.com/symbols/BTCUSD/technicals/',
+      'card-puell': 'https://www.lookintobitcoin.com/charts/puell-multiple/',
+      'card-mayer': 'https://stats.buybitcoinworldwide.com/mayermultiple/',
+      'card-eth-fib': 'charts.html',
+      'card-total3': 'https://www.tradingview.com/symbols/TOTAL3/',
+      'card-total3-2618': 'https://www.tradingview.com/symbols/TOTAL3/',
+      'card-btc50w': 'https://www.lookintobitcoin.com/charts/200-week-moving-average-heatmap/',
+      'card-eth-stoch': 'https://www.tradingview.com/symbols/ETHUSD/technicals/',
+      'card-coinglass': 'https://www.coinglass.com/bull-market-peak-signals',
+    };
+    Object.entries(indicatorLinks).forEach(([id, url]) => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.style.cursor = 'pointer';
+        el.addEventListener('click', () => {
+          if (url.startsWith('http')) window.open(url, '_blank');
+          else window.location.href = url;
+        });
+      }
+    });
 
     // --- Draggable Hex Bubbles ---
     (function initDrag() {
