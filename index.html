@@ -152,7 +152,7 @@
         <div class="hex-bubble__inner">
           <div class="hex-bubble__label">Puell</div>
           <div class="hex-bubble__value" id="puell-sell-val">--</div>
-          <div class="hex-bubble__target">sell @ 3.0</div>
+          <div class="hex-bubble__target">sell @ 2.2</div>
           <div class="hex-bubble__pct" id="puell-sell-pct"></div>
         </div>
       </div>
@@ -370,7 +370,7 @@
     const INDICATOR_SELL_LEVELS = [
       { name: 'Fear & Greed', sellAbove: 75, label: '> 75 = Sell Zone' },
       { name: 'MVRV Z-Score', sellAbove: 5, label: '> 5 = Cycle Top' },
-      { name: 'Puell Multiple', sellAbove: 3, label: '> 3 = Cycle Top' },
+      { name: 'Puell Multiple', sellAbove: 2.2, label: '>= 2.2 = TOP' },
       { name: 'BTC Dominance', sellAbove: 45, label: '< 45% = Alt Season' },
       { name: 'Pi Cycle', sellAbove: 1.0, label: 'Ratio >= 1.0 = Top' },
     ];
@@ -493,7 +493,7 @@
 
       const fngScore = Math.max(0, Math.min(100, Number(fngVal) || 0));
       const mvrvScore = Math.max(0, Math.min(100, (estMvrv !== null ? estMvrv / 6 : 0) * 100));
-      const puellScore = Math.max(0, Math.min(100, (puellEst !== null ? puellEst / 3 : 0) * 100));
+      const puellScore = Math.max(0, Math.min(100, (puellEst !== null ? puellEst / 2.2 : 0) * 100));
       const mayerScore = Math.max(0, Math.min(100, (mayerVal !== null ? (mayerVal - 0.5) / 1.9 : 0) * 100));
       const btcDScore = Math.max(0, Math.min(100, ((70 - btcD) / 30) * 100));
 
@@ -507,7 +507,7 @@
       renderCompositeBreakdown({
         'Fear & Greed': { value: fngScore, weight: 20, raw: fngVal + '/100', contribution: (fngScore * 0.20).toFixed(1) },
         'MVRV Z-Score': { value: mvrvScore, weight: 25, raw: (estMvrv !== null ? estMvrv.toFixed(2) : '--') + ' / 6', contribution: (mvrvScore * 0.25).toFixed(1) },
-        'Puell Multiple': { value: puellScore, weight: 20, raw: (puellEst !== null ? puellEst.toFixed(2) : '--') + ' / 3', contribution: (puellScore * 0.20).toFixed(1) },
+        'Puell Multiple': { value: puellScore, weight: 20, raw: (puellEst !== null ? puellEst.toFixed(2) : '--') + ' / 2.2', contribution: (puellScore * 0.20).toFixed(1) },
         'Mayer Multiple': { value: mayerScore, weight: 15, raw: (mayerVal !== null ? mayerVal.toFixed(2) : '--') + ' / 2.4', contribution: (mayerScore * 0.15).toFixed(1) },
         'BTC.D': { value: btcDScore, weight: 20, raw: btcD.toFixed(1) + '% → 40%', contribution: (btcDScore * 0.20).toFixed(1) },
       }, compositeScore);
@@ -516,7 +516,7 @@
       updateSellHexBars({
         fng: { value: Number(fngVal) || 0, target: 75 },
         mvrv: { value: estMvrv, target: 5 },
-        puell: { value: puellEst, target: 3 },
+        puell: { value: puellEst, target: 2.2 },
         btcd: { value: btcD, target: 45 },
         picycle: { value: piCycle?.ratio || 0, target: 1.0 },
       });
@@ -789,7 +789,7 @@
               if (altChange > btcChange7d) outperform++;
             });
             const rawIdx = Math.round((outperform / alts.length) * 100);
-            altIdx = Math.round(rawIdx * 0.55);
+            altIdx = Math.round(rawIdx * 0.58);
           }
 
           if (altIdx !== null) {
