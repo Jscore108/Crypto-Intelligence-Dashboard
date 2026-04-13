@@ -765,51 +765,40 @@
 
         API.getTopCoins(50).then(async coins => {
           if (!coins || coins.length === 0) return;
-          // Alt season — try multiple sources for real index
+          // Alt season index — calculated from CoinGecko top 50
+          // Uses weighted blend: how many of top 50 alts outperform BTC
+          // Calibrated to approximate blockchaincenter.net index
           let altIdx = null;
-
-          // Try blockchaincenter via CORS proxies
-          const altUrls = [
-            '/api/altseason',
-            'https://api.allorigins.win/raw?url=' + encodeURIComponent('https://api.blockchaincenter.net/api/altcoin-season-index'),
-            'https://corsproxy.io/?' + encodeURIComponent('https://api.blockchaincenter.net/api/altcoin-season-index'),
-            'https://api.blockchaincenter.net/api/altcoin-season-index',
-          ];
-          for (const url of altUrls) {
-            if (altIdx !== null) break;
-            try {
-              const r = await fetch(url, { signal: AbortSignal.timeout(4000) });
-              if (!r.ok) continue;
-              const ct = r.headers.get('content-type') || '';
-              if (!ct.includes('json')) continue;
-              const d = await r.json();
-              if (d && !d.error) {
-                // Try various response shapes
-                const v = d.altcoinIndex ?? d.index ?? d.value ?? d.data?.index ?? d.data?.value ?? (typeof d === 'number' ? d : null);
-                if (v !== null && !isNaN(v)) { altIdx = Math.round(Number(v)); break; }
-                // Maybe it's an object with date keys
-                const keys = Object.keys(d).filter(k => /^\d/.test(k)).sort();
-                if (keys.length > 0) {
-                  const latest = d[keys[keys.length - 1]];
-                  if (typeof latest === 'number') { altIdx = Math.round(latest); break; }
-                  if (latest?.index !== undefined) { altIdx = Math.round(latest.index); break; }
-                }
-              }
-            } catch (_) { continue; }
-          }
-
-          // Fallback: calculate from CoinGecko data
           const btc = coins.find(c => c.id === 'bitcoin');
-          if (altIdx === null && btc) {
-            const btcChange7d = btc.price_change_percentage_7d_in_currency || btc.price_change_percentage_24h || 0;
-            const alts = coins.filter(c => c.id !== 'bitcoin' && c.id !== 'tether' && c.id !== 'usd-coin' && c.id !== 'staked-ether');
+          if (btc) {
+            const btcChange = btc.price_change_percentage_24h || 0;
+            const stables = ['tether', 'usd-coin', 'staked-ether', 'dai', 'ethena-usde', 'wrapped-bitcoin'];
+            const alts = coins.filter(c => c.id !== 'bitcoin' && !stables.includes(c.id));
+
+            // Count alts outperforming BTC on 24h (real alt season uses 90d but we approximate)
             let outperform = 0;
-            alts.forEach(c => {
-              const altChange = c.price_change_percentage_7d_in_currency || c.price_change_percentage_24h || 0;
-              if (altChange > btcChange7d) outperform++;
+            let totalWeight = 0;
+            alts.forEach((c, i) => {
+              const weight = 1 / (i + 1); // higher ranked alts matter more
+              totalWeight += weight;
+              const altChange = c.price_change_percentage_24h || 0;
+              if (altChange > btcChange) outperform += weight;
             });
-            const rawIdx = Math.round((outperform / alts.length) * 100);
-            altIdx = Math.round(rawIdx * 0.58);
+
+            // Weighted percentage, then calibrate
+            // Raw weighted % tends to be ~50-70 in neutral markets
+            // Real alt season index is ~40-45 in neutral
+            // So we map: raw 30→20, raw 50→40, raw 75→75, raw 90→90
+            const rawPct = (outperform / totalWeight) * 100;
+            // Piecewise calibration
+            if (rawPct <= 50) {
+              altIdx = Math.round(rawPct * 0.8); // compress lower range
+            } else if (rawPct <= 75) {
+              altIdx = Math.round(40 + (rawPct - 50) * 1.4); // expand mid range
+            } else {
+              altIdx = Math.round(75 + (rawPct - 75) * 1.0); // 1:1 upper range
+            }
+            altIdx = Math.max(0, Math.min(100, altIdx));
           }
 
           if (altIdx !== null) {
