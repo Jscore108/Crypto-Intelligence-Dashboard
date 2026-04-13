@@ -763,40 +763,23 @@
           }
         }).catch(() => {});
 
-        API.getTopCoins(50).then(async coins => {
+        API.getTopCoins(50).then(coins => {
           if (!coins || coins.length === 0) return;
-          // Alt season index — try proxy for real data, fallback to calculation
+          // Alt season index — simple count scaled to match real index
           let altIdx = null;
-
-          // Try our serverless proxy (fetches from blockchaincenter)
-          try {
-            const r = await fetch('/api/altseason', { signal: AbortSignal.timeout(5000) });
-            if (r.ok && (r.headers.get('content-type') || '').includes('json')) {
-              const d = await r.json();
-              const v = d?.index ?? d?.altcoinIndex ?? d?.value;
-              if (v !== undefined && !isNaN(v)) altIdx = Math.round(Number(v));
-            }
-          } catch (_) {}
-
-          // Fallback: calculate from CoinGecko
-          if (altIdx === null) {
-            const btc = coins.find(c => c.id === 'bitcoin');
-            if (btc) {
-              const btcChange = btc.price_change_percentage_24h || 0;
-              const stables = ['tether', 'usd-coin', 'staked-ether', 'dai', 'ethena-usde', 'wrapped-bitcoin'];
-              const alts = coins.filter(c => c.id !== 'bitcoin' && !stables.includes(c.id));
-              let outperform = 0, totalWeight = 0;
-              alts.forEach((c, i) => {
-                const w = 1 / (i + 1);
-                totalWeight += w;
-                if ((c.price_change_percentage_24h || 0) > btcChange) outperform += w;
-              });
-              const rawPct = (outperform / totalWeight) * 100;
-              if (rawPct <= 50) altIdx = Math.round(rawPct * 0.8);
-              else if (rawPct <= 75) altIdx = Math.round(40 + (rawPct - 50) * 1.4);
-              else altIdx = Math.round(75 + (rawPct - 75) * 1.0);
-              altIdx = Math.max(0, Math.min(100, altIdx));
-            }
+          const btc = coins.find(c => c.id === 'bitcoin');
+          if (btc) {
+            const btcChange = btc.price_change_percentage_24h || 0;
+            const stables = ['tether', 'usd-coin', 'staked-ether', 'dai', 'ethena-usde', 'wrapped-bitcoin', 'binance-peg-busd'];
+            const alts = coins.filter(c => c.id !== 'bitcoin' && !stables.includes(c.id));
+            let outperform = 0;
+            alts.forEach(c => {
+              if ((c.price_change_percentage_24h || 0) > btcChange) outperform++;
+            });
+            // Raw % of alts beating BTC on 24h is typically 50-75% in neutral market
+            // Real alt season (90d) reads ~40 in neutral
+            // Simple linear scale: multiply by 0.55
+            altIdx = Math.max(0, Math.min(100, Math.round((outperform / alts.length) * 100 * 0.55)));
           }
 
           if (altIdx !== null) {
