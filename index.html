@@ -793,20 +793,25 @@
           renderMoversTable('losers-body', sorted.slice(-5).reverse());
         }).catch(() => {});
 
-        // BTC + ETH history for indicators
+        // BTC history for indicators
         Promise.all([
           API.getBTCHistory(365),
           API.getFearGreed(),
           API.getGlobalData(),
-          API.getHistoricalPrices('ethereum', 365).catch(() => null),
-        ]).then(([btcHistory, fg, global, ethHistory]) => {
+        ]).then(([btcHistory, fg, global]) => {
           if (!btcHistory?.prices) return;
           const btcPrices = btcHistory.prices.map(p => p[1]);
-          const ethPrices = ethHistory?.prices ? ethHistory.prices.map(p => p[1]) : null;
           const fngVal = fg?.[0]?.value || 50;
           const btcD = global?.market_cap_percentage?.btc || 50;
           renderIndicators(btcPrices, fngVal, btcD);
-          renderExtraIndicators(btcPrices, ethPrices);
+
+          // Fetch ETH history separately (avoids rate limit)
+          setTimeout(() => {
+            API.getHistoricalPrices('ethereum', 365).then(ethHistory => {
+              const ethPrices = ethHistory?.prices ? ethHistory.prices.map(p => p[1]) : null;
+              renderExtraIndicators(btcPrices, ethPrices);
+            }).catch(() => renderExtraIndicators(btcPrices, null));
+          }, 2000);
 
           // Total3 market cap (total - BTC - ETH)
           if (global?.total_market_cap?.usd) {
@@ -948,17 +953,24 @@
         { level: '4.236', price: 15418 },
       ];
       const fibEl = document.getElementById('eth-fib-content');
-      if (fibEl && ethPrices && ethPrices.length > 0) {
-        const ethPrice = ethPrices[ethPrices.length - 1];
-        fibEl.innerHTML = fibs.map(f => {
-          const pctAway = ((f.price - ethPrice) / ethPrice * 100);
-          const reached = ethPrice >= f.price;
-          const clr = reached ? 'var(--accent-neon-green)' : pctAway < 20 ? 'var(--accent-gold)' : 'var(--text-muted)';
-          return `<div style="display:flex;justify-content:space-between;padding:2px 0;"><span style="color:${clr}">${f.level}</span><span style="color:var(--text-primary)">$${f.price.toLocaleString()}</span></div>`;
-        }).join('');
+      if (fibEl) {
+        if (ethPrices && ethPrices.length > 0) {
+          const ethPrice = ethPrices[ethPrices.length - 1];
+          fibEl.innerHTML = fibs.map(f => {
+            const pctAway = ((f.price - ethPrice) / ethPrice * 100);
+            const reached = ethPrice >= f.price;
+            const clr = reached ? 'var(--accent-neon-green)' : pctAway < 20 ? 'var(--accent-gold)' : 'var(--text-muted)';
+            return `<div style="display:flex;justify-content:space-between;padding:2px 0;"><span style="color:${clr}">${f.level}</span><span style="color:var(--text-primary)">$${f.price.toLocaleString()}</span></div>`;
+          }).join('');
+        } else {
+          // Show fib levels without current price comparison
+          fibEl.innerHTML = fibs.map(f =>
+            `<div style="display:flex;justify-content:space-between;padding:2px 0;"><span style="color:var(--text-muted)">${f.level}</span><span style="color:var(--text-primary)">$${f.price.toLocaleString()}</span></div>`
+          ).join('');
+        }
       }
 
-      // ETH Weekly Stochastic RSI (approximate with 14-period on weekly data)
+      // ETH Weekly Stochastic RSI
       if (ethPrices && ethPrices.length > 100) {
         // Sample every 7th data point for weekly
         const weekly = ethPrices.filter((_, i) => i % 7 === 0);
