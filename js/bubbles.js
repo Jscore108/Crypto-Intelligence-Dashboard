@@ -40,27 +40,57 @@ const BubbleChart = (() => {
   }
 
   async function loadData() {
-    try {
-      // Fetch top 100
-      const url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&sparkline=false&price_change_percentage=1h,24h,7d`;
-      const coins = await fetch(url).then(r => r.json());
-
-      // Fetch extra watchlist coins not in top 100
-      let extras = [];
-      try {
-        const extraUrl = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${EXTRA_COINS}&sparkline=false&price_change_percentage=1h,24h,7d`;
-        extras = await fetch(extraUrl).then(r => r.json());
-      } catch (_) {}
-
-      // Merge, avoiding duplicates
-      const allIds = new Set(coins.map(c => c.id));
-      extras.forEach(c => { if (!allIds.has(c.id)) coins.push(c); });
-
-      createBubbles(coins);
-      if (!animId) animate();
-    } catch (err) {
-      console.error('[Bubbles] Load failed:', err);
+    // Show loading state
+    if (ctx) {
+      ctx.fillStyle = 'rgba(168,180,212,0.5)';
+      ctx.font = "600 14px 'Orbitron', sans-serif";
+      ctx.textAlign = 'center';
+      ctx.fillText('Loading bubbles...', W / 2, H / 2);
     }
+
+    // Try fetching with retries
+    let coins = null;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        if (attempt > 0) await new Promise(r => setTimeout(r, 3000 * attempt));
+        const url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=50&page=1&sparkline=false&price_change_percentage=1h,24h,7d`;
+        const res = await fetch(url);
+        if (res.status === 429) { continue; } // rate limited, retry
+        if (!res.ok) continue;
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) { coins = data; break; }
+      } catch (_) { continue; }
+    }
+
+    if (!coins) {
+      // Show error
+      if (ctx) {
+        ctx.clearRect(0, 0, W, H);
+        ctx.fillStyle = 'rgba(168,180,212,0.4)';
+        ctx.font = "600 12px 'Orbitron', sans-serif";
+        ctx.textAlign = 'center';
+        ctx.fillText('Bubbles loading... retrying in 30s', W / 2, H / 2);
+      }
+      setTimeout(loadData, 30000);
+      return;
+    }
+
+    // Fetch extra watchlist coins
+    try {
+      await new Promise(r => setTimeout(r, 2000)); // delay to avoid rate limit
+      const extraUrl = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${EXTRA_COINS}&sparkline=false&price_change_percentage=1h,24h,7d`;
+      const res = await fetch(extraUrl);
+      if (res.ok) {
+        const extras = await res.json();
+        if (Array.isArray(extras)) {
+          const allIds = new Set(coins.map(c => c.id));
+          extras.forEach(c => { if (!allIds.has(c.id)) coins.push(c); });
+        }
+      }
+    } catch (_) {}
+
+    createBubbles(coins);
+    if (!animId) animate();
   }
 
   function getChange(coin) {
