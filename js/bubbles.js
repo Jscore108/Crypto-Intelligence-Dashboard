@@ -1,18 +1,18 @@
 // ============================================================
 // bubbles.js — Interactive Crypto Bubble Chart
-// Top 100 + watchlist coins, sized by % change, floating
+// Top 50 + watchlist, sized by % change, calm floating, draggable
 // ============================================================
 
 const BubbleChart = (() => {
   let canvas, ctx, W, H;
   let bubbles = [];
   let animId = null;
-  let timeframe = '24h'; // '1h', '24h', '7d'
+  let timeframe = '24h';
   let hoveredBubble = null;
+  let dragBubble = null, dragOffX = 0, dragOffY = 0;
 
-  // Watchlist coins (highlighted in gold)
   const WATCHLIST = ['bitcoin', 'ethereum', 'solana', 'chainlink', 'brett-based', 'popcat', 'dogwifcoin'];
-  const EXTRA_COINS = 'brett-based,popcat,dogwifcoin'; // not in top 100
+  const EXTRA_COINS = 'brett-based,popcat,dogwifcoin';
 
   const COLORS = {
     positive: { r: 0, g: 200, b: 120 },
@@ -26,9 +26,13 @@ const BubbleChart = (() => {
     ctx = canvas.getContext('2d');
     resize();
     canvas.addEventListener('mousemove', onMouseMove);
-    canvas.addEventListener('mouseleave', () => { hoveredBubble = null; });
+    canvas.addEventListener('mousedown', onMouseDown);
+    canvas.addEventListener('mouseup', onMouseUp);
+    canvas.addEventListener('mouseleave', () => { hoveredBubble = null; dragBubble = null; });
     canvas.addEventListener('click', onClick);
-    canvas.addEventListener('touchstart', onTouch, { passive: true });
+    canvas.addEventListener('touchstart', onTouchStart, { passive: false });
+    canvas.addEventListener('touchmove', onTouchMove, { passive: false });
+    canvas.addEventListener('touchend', () => { dragBubble = null; });
     window.addEventListener('resize', resize);
     loadData();
   }
@@ -40,7 +44,6 @@ const BubbleChart = (() => {
   }
 
   async function loadData() {
-    // Show loading state
     if (ctx) {
       ctx.fillStyle = 'rgba(168,180,212,0.5)';
       ctx.font = "600 14px 'Orbitron', sans-serif";
@@ -48,14 +51,12 @@ const BubbleChart = (() => {
       ctx.fillText('Loading bubbles...', W / 2, H / 2);
     }
 
-    // Try fetching with retries
     let coins = null;
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
         if (attempt > 0) await new Promise(r => setTimeout(r, 3000 * attempt));
-        const url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=50&page=1&sparkline=false&price_change_percentage=1h,24h,7d`;
-        const res = await fetch(url);
-        if (res.status === 429) { continue; } // rate limited, retry
+        const res = await fetch(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=50&page=1&sparkline=false&price_change_percentage=1h,24h,7d`);
+        if (res.status === 429) continue;
         if (!res.ok) continue;
         const data = await res.json();
         if (Array.isArray(data) && data.length > 0) { coins = data; break; }
@@ -63,23 +64,20 @@ const BubbleChart = (() => {
     }
 
     if (!coins) {
-      // Show error
       if (ctx) {
         ctx.clearRect(0, 0, W, H);
         ctx.fillStyle = 'rgba(168,180,212,0.4)';
         ctx.font = "600 12px 'Orbitron', sans-serif";
         ctx.textAlign = 'center';
-        ctx.fillText('Bubbles loading... retrying in 30s', W / 2, H / 2);
+        ctx.fillText('Retrying in 30s...', W / 2, H / 2);
       }
       setTimeout(loadData, 30000);
       return;
     }
 
-    // Fetch extra watchlist coins
     try {
-      await new Promise(r => setTimeout(r, 2000)); // delay to avoid rate limit
-      const extraUrl = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${EXTRA_COINS}&sparkline=false&price_change_percentage=1h,24h,7d`;
-      const res = await fetch(extraUrl);
+      await new Promise(r => setTimeout(r, 2000));
+      const res = await fetch(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${EXTRA_COINS}&sparkline=false&price_change_percentage=1h,24h,7d`);
       if (res.ok) {
         const extras = await res.json();
         if (Array.isArray(extras)) {
@@ -100,12 +98,18 @@ const BubbleChart = (() => {
   }
 
   function createBubbles(coins) {
-    bubbles = coins.map(coin => {
+    // Grid layout so they start organized, not random
+    const cols = Math.ceil(Math.sqrt(coins.length * (W / H)));
+    const rows = Math.ceil(coins.length / cols);
+    const cellW = W / cols, cellH = H / rows;
+
+    bubbles = coins.map((coin, i) => {
       const change = getChange(coin);
       const absChange = Math.abs(change);
-      const minR = 18, maxR = 60;
-      const radius = Math.max(minR, Math.min(maxR, minR + absChange * 3));
+      const minR = 20, maxR = 55;
+      const radius = Math.max(minR, Math.min(maxR, minR + absChange * 2.5));
       const isWatch = WATCHLIST.includes(coin.id);
+      const col = i % cols, row = Math.floor(i / cols);
 
       return {
         id: coin.id,
@@ -115,78 +119,66 @@ const BubbleChart = (() => {
         change: change,
         marketCap: coin.market_cap,
         radius: radius,
-        x: Math.random() * (W - radius * 2) + radius,
-        y: Math.random() * (H - radius * 2) + radius,
-        vx: (Math.random() - 0.5) * 0.5,
-        vy: (Math.random() - 0.5) * 0.5,
+        x: cellW * col + cellW / 2,
+        y: cellH * row + cellH / 2,
+        vx: 0,
+        vy: 0,
+        floatPhase: Math.random() * Math.PI * 2,
+        floatSpeed: 0.003 + Math.random() * 0.004,
+        floatAmpX: 0.3 + Math.random() * 0.4,
+        floatAmpY: 0.2 + Math.random() * 0.3,
         isWatchlist: isWatch,
-        image: coin.image,
         coin: coin,
       };
     });
 
-    // Sort so watchlist renders on top
     bubbles.sort((a, b) => (a.isWatchlist ? 1 : 0) - (b.isWatchlist ? 1 : 0));
   }
 
   function animate() {
     ctx.clearRect(0, 0, W, H);
 
-    // Physics
     bubbles.forEach(b => {
-      b.x += b.vx;
-      b.y += b.vy;
+      if (b === dragBubble) return; // don't move dragged bubble
 
-      // Bounce off walls
-      if (b.x - b.radius < 0) { b.x = b.radius; b.vx *= -0.8; }
-      if (b.x + b.radius > W) { b.x = W - b.radius; b.vx *= -0.8; }
-      if (b.y - b.radius < 0) { b.y = b.radius; b.vy *= -0.8; }
-      if (b.y + b.radius > H) { b.y = H - b.radius; b.vy *= -0.8; }
+      // Gentle floating — sine wave drift only
+      b.floatPhase += b.floatSpeed;
+      b.x += Math.sin(b.floatPhase) * b.floatAmpX;
+      b.y += Math.cos(b.floatPhase * 0.7) * b.floatAmpY;
 
-      // Damping
-      b.vx *= 0.999;
-      b.vy *= 0.999;
-
-      // Gentle random drift
-      b.vx += (Math.random() - 0.5) * 0.02;
-      b.vy += (Math.random() - 0.5) * 0.02;
+      // Keep in bounds
+      b.x = Math.max(b.radius, Math.min(W - b.radius, b.x));
+      b.y = Math.max(b.radius, Math.min(H - b.radius, b.y));
     });
 
-    // Collision between bubbles
+    // Soft collision — just push apart, no bouncing
     for (let i = 0; i < bubbles.length; i++) {
       for (let j = i + 1; j < bubbles.length; j++) {
         const a = bubbles[i], b = bubbles[j];
         const dx = b.x - a.x, dy = b.y - a.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
-        const minDist = a.radius + b.radius;
+        const minDist = a.radius + b.radius + 2;
         if (dist < minDist && dist > 0) {
           const nx = dx / dist, ny = dy / dist;
-          const overlap = (minDist - dist) / 2;
-          a.x -= nx * overlap;
-          a.y -= ny * overlap;
-          b.x += nx * overlap;
-          b.y += ny * overlap;
-          // Swap velocities slightly
-          const dvx = a.vx - b.vx, dvy = a.vy - b.vy;
-          a.vx -= nx * dvx * 0.3;
-          a.vy -= ny * dvy * 0.3;
-          b.vx += nx * dvx * 0.3;
-          b.vy += ny * dvy * 0.3;
+          const push = (minDist - dist) * 0.15;
+          if (a !== dragBubble) { a.x -= nx * push; a.y -= ny * push; }
+          if (b !== dragBubble) { b.x += nx * push; b.y += ny * push; }
         }
       }
     }
 
-    // Draw bubbles
+    // Draw
     bubbles.forEach(b => {
       const isHovered = hoveredBubble === b;
+      const isDragged = dragBubble === b;
       const c = b.isWatchlist ? COLORS.watchlist : (b.change >= 0 ? COLORS.positive : COLORS.negative);
-      const alpha = isHovered ? 0.35 : 0.2;
-      const strokeAlpha = isHovered ? 0.9 : 0.5;
+      const alpha = isHovered || isDragged ? 0.35 : 0.2;
+      const strokeAlpha = isHovered || isDragged ? 0.9 : 0.5;
 
-      // Glow
-      if (isHovered || b.isWatchlist) {
+      // Glow for watchlist/hovered
+      if (isHovered || b.isWatchlist || isDragged) {
         ctx.beginPath();
-        ctx.arc(b.x, b.y, b.radius * 1.3, 0, Math.PI * 2);
+        ctx.arc(b.x, b.y, b.radius * 1.25, 0, Math.PI * 2);
         ctx.fillStyle = `rgba(${c.r},${c.g},${c.b},0.06)`;
         ctx.fill();
       }
@@ -197,47 +189,41 @@ const BubbleChart = (() => {
       ctx.fillStyle = `rgba(${c.r},${c.g},${c.b},${alpha})`;
       ctx.fill();
       ctx.strokeStyle = `rgba(${c.r},${c.g},${c.b},${strokeAlpha})`;
-      ctx.lineWidth = isHovered ? 2 : 1;
+      ctx.lineWidth = isDragged ? 2.5 : (isHovered ? 2 : 1);
       ctx.stroke();
 
-      // Symbol text
-      const fontSize = Math.max(8, b.radius * 0.38);
-      ctx.font = `bold ${fontSize}px 'Orbitron', sans-serif`;
+      // Symbol
+      const fs = Math.max(8, b.radius * 0.36);
+      ctx.font = `bold ${fs}px 'Orbitron', sans-serif`;
       ctx.textAlign = 'center';
-      ctx.fillStyle = `rgba(255,255,255,${isHovered ? 1 : 0.9})`;
+      ctx.fillStyle = `rgba(255,255,255,0.9)`;
       ctx.fillText(b.symbol, b.x, b.y - 2);
 
       // Change %
-      const changeFontSize = Math.max(7, b.radius * 0.28);
-      ctx.font = `600 ${changeFontSize}px 'JetBrains Mono', monospace`;
+      const cfs = Math.max(7, b.radius * 0.26);
+      ctx.font = `600 ${cfs}px 'JetBrains Mono', monospace`;
       const sign = b.change >= 0 ? '+' : '';
       ctx.fillStyle = b.change >= 0 ? 'rgba(0,255,163,0.9)' : 'rgba(255,60,80,0.9)';
-      ctx.fillText(`${sign}${b.change.toFixed(1)}%`, b.x, b.y + fontSize * 0.6);
+      ctx.fillText(`${sign}${b.change.toFixed(1)}%`, b.x, b.y + fs * 0.55);
     });
 
-    // Tooltip for hovered bubble
-    if (hoveredBubble) {
+    // Tooltip
+    if (hoveredBubble && !dragBubble) {
       const b = hoveredBubble;
-      const tx = Math.min(b.x + b.radius + 10, W - 180);
+      const tx = Math.min(b.x + b.radius + 10, W - 175);
       const ty = Math.max(b.y - 40, 10);
-
       ctx.fillStyle = 'rgba(5,5,15,0.92)';
       ctx.strokeStyle = 'rgba(0,229,255,0.3)';
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.roundRect(tx, ty, 170, 65, 8);
-      ctx.fill();
-      ctx.stroke();
-
+      ctx.fill(); ctx.stroke();
       ctx.font = "bold 11px 'Orbitron', sans-serif";
-      ctx.fillStyle = '#fff';
-      ctx.textAlign = 'left';
+      ctx.fillStyle = '#fff'; ctx.textAlign = 'left';
       ctx.fillText(b.name, tx + 10, ty + 18);
-
       ctx.font = "600 10px 'JetBrains Mono', monospace";
       ctx.fillStyle = '#a8b4d4';
       ctx.fillText('$' + (b.price >= 1 ? b.price.toLocaleString(undefined, {maximumFractionDigits: 2}) : b.price.toFixed(6)), tx + 10, ty + 34);
-
       const mcap = b.marketCap >= 1e9 ? (b.marketCap / 1e9).toFixed(1) + 'B' : (b.marketCap / 1e6).toFixed(0) + 'M';
       ctx.fillText('MCap: $' + mcap, tx + 10, ty + 50);
     }
@@ -245,52 +231,81 @@ const BubbleChart = (() => {
     animId = requestAnimationFrame(animate);
   }
 
-  function onMouseMove(e) {
-    const rect = canvas.getBoundingClientRect();
-    const mx = e.clientX - rect.left;
-    const my = e.clientY - rect.top;
-    hoveredBubble = null;
-    // Check in reverse (top-most first)
+  function findBubbleAt(mx, my) {
     for (let i = bubbles.length - 1; i >= 0; i--) {
       const b = bubbles[i];
-      const dx = mx - b.x, dy = my - b.y;
-      if (dx * dx + dy * dy < b.radius * b.radius) {
-        hoveredBubble = b;
-        canvas.style.cursor = 'pointer';
-        return;
-      }
+      if ((mx - b.x) ** 2 + (my - b.y) ** 2 < b.radius ** 2) return b;
     }
-    canvas.style.cursor = 'default';
+    return null;
+  }
+
+  function onMouseMove(e) {
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+    if (dragBubble) {
+      dragBubble.x = mx - dragOffX;
+      dragBubble.y = my - dragOffY;
+      return;
+    }
+    hoveredBubble = findBubbleAt(mx, my);
+    canvas.style.cursor = hoveredBubble ? 'grab' : 'default';
+  }
+
+  function onMouseDown(e) {
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+    const b = findBubbleAt(mx, my);
+    if (b) {
+      dragBubble = b;
+      dragOffX = mx - b.x;
+      dragOffY = my - b.y;
+      canvas.style.cursor = 'grabbing';
+      e.preventDefault();
+    }
+  }
+
+  function onMouseUp() {
+    if (dragBubble) {
+      canvas.style.cursor = 'grab';
+      dragBubble = null;
+    }
   }
 
   function onClick(e) {
-    if (hoveredBubble) {
+    if (!dragBubble && hoveredBubble) {
       window.open(`https://www.coingecko.com/en/coins/${hoveredBubble.id}`, '_blank');
     }
   }
 
-  function onTouch(e) {
+  function onTouchStart(e) {
     const rect = canvas.getBoundingClientRect();
     const t = e.touches[0];
     const mx = t.clientX - rect.left, my = t.clientY - rect.top;
-    for (let i = bubbles.length - 1; i >= 0; i--) {
-      const b = bubbles[i];
-      if ((mx - b.x) ** 2 + (my - b.y) ** 2 < b.radius ** 2) {
-        window.open(`https://www.coingecko.com/en/coins/${b.id}`, '_blank');
-        return;
-      }
+    const b = findBubbleAt(mx, my);
+    if (b) {
+      dragBubble = b;
+      dragOffX = mx - b.x;
+      dragOffY = my - b.y;
+      e.preventDefault();
+    }
+  }
+
+  function onTouchMove(e) {
+    if (dragBubble) {
+      const rect = canvas.getBoundingClientRect();
+      const t = e.touches[0];
+      dragBubble.x = t.clientX - rect.left - dragOffX;
+      dragBubble.y = t.clientY - rect.top - dragOffY;
+      e.preventDefault();
     }
   }
 
   function setTimeframe(tf) {
     timeframe = tf;
-    if (bubbles.length > 0) {
-      bubbles.forEach(b => {
-        b.change = getChange(b.coin);
-        const absChange = Math.abs(b.change);
-        b.radius = Math.max(18, Math.min(60, 18 + absChange * 3));
-      });
-    }
+    bubbles.forEach(b => {
+      b.change = getChange(b.coin);
+      b.radius = Math.max(20, Math.min(55, 20 + Math.abs(b.change) * 2.5));
+    });
   }
 
   return { init, setTimeframe, loadData };
