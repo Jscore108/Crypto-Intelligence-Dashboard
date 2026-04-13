@@ -765,40 +765,38 @@
 
         API.getTopCoins(50).then(async coins => {
           if (!coins || coins.length === 0) return;
-          // Alt season index — calculated from CoinGecko top 50
-          // Uses weighted blend: how many of top 50 alts outperform BTC
-          // Calibrated to approximate blockchaincenter.net index
+          // Alt season index — try proxy for real data, fallback to calculation
           let altIdx = null;
-          const btc = coins.find(c => c.id === 'bitcoin');
-          if (btc) {
-            const btcChange = btc.price_change_percentage_24h || 0;
-            const stables = ['tether', 'usd-coin', 'staked-ether', 'dai', 'ethena-usde', 'wrapped-bitcoin'];
-            const alts = coins.filter(c => c.id !== 'bitcoin' && !stables.includes(c.id));
 
-            // Count alts outperforming BTC on 24h (real alt season uses 90d but we approximate)
-            let outperform = 0;
-            let totalWeight = 0;
-            alts.forEach((c, i) => {
-              const weight = 1 / (i + 1); // higher ranked alts matter more
-              totalWeight += weight;
-              const altChange = c.price_change_percentage_24h || 0;
-              if (altChange > btcChange) outperform += weight;
-            });
-
-            // Weighted percentage, then calibrate
-            // Raw weighted % tends to be ~50-70 in neutral markets
-            // Real alt season index is ~40-45 in neutral
-            // So we map: raw 30→20, raw 50→40, raw 75→75, raw 90→90
-            const rawPct = (outperform / totalWeight) * 100;
-            // Piecewise calibration
-            if (rawPct <= 50) {
-              altIdx = Math.round(rawPct * 0.8); // compress lower range
-            } else if (rawPct <= 75) {
-              altIdx = Math.round(40 + (rawPct - 50) * 1.4); // expand mid range
-            } else {
-              altIdx = Math.round(75 + (rawPct - 75) * 1.0); // 1:1 upper range
+          // Try our serverless proxy (fetches from blockchaincenter)
+          try {
+            const r = await fetch('/api/altseason', { signal: AbortSignal.timeout(5000) });
+            if (r.ok && (r.headers.get('content-type') || '').includes('json')) {
+              const d = await r.json();
+              const v = d?.index ?? d?.altcoinIndex ?? d?.value;
+              if (v !== undefined && !isNaN(v)) altIdx = Math.round(Number(v));
             }
-            altIdx = Math.max(0, Math.min(100, altIdx));
+          } catch (_) {}
+
+          // Fallback: calculate from CoinGecko
+          if (altIdx === null) {
+            const btc = coins.find(c => c.id === 'bitcoin');
+            if (btc) {
+              const btcChange = btc.price_change_percentage_24h || 0;
+              const stables = ['tether', 'usd-coin', 'staked-ether', 'dai', 'ethena-usde', 'wrapped-bitcoin'];
+              const alts = coins.filter(c => c.id !== 'bitcoin' && !stables.includes(c.id));
+              let outperform = 0, totalWeight = 0;
+              alts.forEach((c, i) => {
+                const w = 1 / (i + 1);
+                totalWeight += w;
+                if ((c.price_change_percentage_24h || 0) > btcChange) outperform += w;
+              });
+              const rawPct = (outperform / totalWeight) * 100;
+              if (rawPct <= 50) altIdx = Math.round(rawPct * 0.8);
+              else if (rawPct <= 75) altIdx = Math.round(40 + (rawPct - 50) * 1.4);
+              else altIdx = Math.round(75 + (rawPct - 75) * 1.0);
+              altIdx = Math.max(0, Math.min(100, altIdx));
+            }
           }
 
           if (altIdx !== null) {
