@@ -798,10 +798,9 @@
             alts.forEach(c => {
               if ((c.price_change_percentage_24h || 0) > btcChange) outperform++;
             });
-            // Raw % of alts beating BTC on 24h is typically 50-75% in neutral market
-            // Real alt season (90d) reads ~40 in neutral
-            // Simple linear scale: multiply by 0.55
-            altIdx = Math.max(0, Math.min(100, Math.round((outperform / alts.length) * 100 * 0.55)));
+            // Calibrated: multiply raw 24h outperformance by 0.50 to approximate 90d index
+            // Real alt season = 34 when ~68% of alts outperform BTC on 24h
+            altIdx = Math.max(0, Math.min(100, Math.round((outperform / alts.length) * 100 * 0.50)));
           }
 
           if (altIdx !== null) {

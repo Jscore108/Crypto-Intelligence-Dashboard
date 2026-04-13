@@ -180,18 +180,18 @@ const Indicators = (() => {
   }
 
   /**
-   * Estimate MVRV Z-Score from price data when on-chain data unavailable
-   * Uses a simplified model based on deviation from long-term average
+   * Estimate MVRV Z-Score from price data
+   * Calibrated: ratio 1.0 = Z-score 0, ratio 1.17 ≈ 0.56, ratio 2.8 ≈ 6
    */
   function estimateMVRV(prices) {
     if (!prices || prices.length < 200) return null;
     const longTermAvg = SMA(prices, 200);
     const currentPrice = prices[prices.length - 1];
     if (!longTermAvg || longTermAvg === 0) return null;
-    // Simplified: ratio of current price to 200 SMA, scaled
     const ratio = currentPrice / longTermAvg;
-    // Map ratio [0.5, 3.0] to z-score [-2, 8]
-    const estimated = ((ratio - 0.5) / 2.5) * 10 - 2;
+    // Map: ratio 1.0 = 0, each 0.1 above = +0.33 Z-score
+    // At ratio 1.17 → 0.56, at ratio 2.8 → 5.94 (near cycle top of 6)
+    const estimated = (ratio - 1.0) * 3.3;
     return Math.round(estimated * 100) / 100;
   }
 
