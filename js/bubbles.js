@@ -148,13 +148,18 @@ const BubbleChart = (() => {
 
   function layoutBubbles() {
     if (bubbles.length === 0) return;
+    const pad = 10; // padding from edges
     const cols = Math.ceil(Math.sqrt(bubbles.length * (W / H)));
     const rows = Math.ceil(bubbles.length / cols);
-    const cellW = W / cols, cellH = H / rows;
+    const usableW = W - pad * 2, usableH = H - pad * 2;
+    const cellW = usableW / cols, cellH = usableH / rows;
     bubbles.forEach((b, i) => {
       if (b === dragBubble) return;
-      b.x = (i % cols) * cellW + cellW / 2;
-      b.y = Math.floor(i / cols) * cellH + cellH / 2;
+      b.x = pad + (i % cols) * cellW + cellW / 2;
+      b.y = pad + Math.floor(i / cols) * cellH + cellH / 2;
+      // Clamp inside bounds
+      b.x = Math.max(b.radius + 2, Math.min(W - b.radius - 2, b.x));
+      b.y = Math.max(b.radius + 2, Math.min(H - b.radius - 2, b.y));
     });
   }
 
@@ -183,6 +188,13 @@ const BubbleChart = (() => {
       }
     }
 
+    // Clamp all bubbles inside bounds
+    bubbles.forEach(b => {
+      if (b === dragBubble) return;
+      b.x = Math.max(b.radius + 2, Math.min(W - b.radius - 2, b.x));
+      b.y = Math.max(b.radius + 2, Math.min(H - b.radius - 2, b.y));
+    });
+
     // Draw
     bubbles.forEach(b => {
       const isH = hoveredBubble === b;
@@ -198,14 +210,27 @@ const BubbleChart = (() => {
         ctx.fill();
       }
 
-      // Body
+      // Body — glass 3D effect
+      const grad = ctx.createRadialGradient(
+        b.x - b.radius * 0.3, b.y - b.radius * 0.3, b.radius * 0.1,
+        b.x, b.y, b.radius
+      );
+      grad.addColorStop(0, `rgba(${Math.min(255,c.r+80)},${Math.min(255,c.g+80)},${Math.min(255,c.b+80)},${alpha + 0.15})`);
+      grad.addColorStop(0.4, `rgba(${c.r},${c.g},${c.b},${alpha})`);
+      grad.addColorStop(1, `rgba(${Math.floor(c.r*0.4)},${Math.floor(c.g*0.4)},${Math.floor(c.b*0.4)},${alpha + 0.08})`);
       ctx.beginPath();
       ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(${c.r},${c.g},${c.b},${alpha})`;
+      ctx.fillStyle = grad;
       ctx.fill();
-      ctx.strokeStyle = `rgba(${c.r},${c.g},${c.b},${isH || isD ? 0.9 : 0.45})`;
+      ctx.strokeStyle = `rgba(${c.r},${c.g},${c.b},${isH || isD ? 0.9 : 0.4})`;
       ctx.lineWidth = isD ? 2.5 : (isH ? 2 : 0.8);
       ctx.stroke();
+
+      // Glass highlight (top-left shine)
+      ctx.beginPath();
+      ctx.ellipse(b.x - b.radius * 0.22, b.y - b.radius * 0.28, b.radius * 0.35, b.radius * 0.18, -0.5, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255,255,255,0.12)';
+      ctx.fill();
 
       // Coin logo
       const logo = logoCache[b.id];
