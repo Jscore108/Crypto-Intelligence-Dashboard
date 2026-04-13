@@ -189,9 +189,8 @@ const Indicators = (() => {
     const currentPrice = prices[prices.length - 1];
     if (!longTermAvg || longTermAvg === 0) return null;
     const ratio = currentPrice / longTermAvg;
-    // Map: ratio 1.0 = 0, each 0.1 above = +0.33 Z-score
-    // At ratio 1.17 → 0.56, at ratio 2.8 → 5.94 (near cycle top of 6)
     const estimated = (ratio - 1.0) * 3.3;
+    console.log('[MVRV Debug] price:', currentPrice, '200SMA:', longTermAvg, 'ratio:', ratio.toFixed(4), 'Z-score:', estimated.toFixed(2));
     return Math.round(estimated * 100) / 100;
   }
 

@@ -798,9 +798,9 @@
             alts.forEach(c => {
               if ((c.price_change_percentage_24h || 0) > btcChange) outperform++;
             });
-            // Calibrated: multiply raw 24h outperformance by 0.50 to approximate 90d index
-            // Real alt season = 34 when ~68% of alts outperform BTC on 24h
-            altIdx = Math.max(0, Math.min(100, Math.round((outperform / alts.length) * 100 * 0.50)));
+            const rawAltPct = Math.round((outperform / alts.length) * 100);
+            altIdx = Math.max(0, Math.min(100, Math.round(rawAltPct * 0.50)));
+            console.log('[AltSeason Debug] outperform:', outperform, '/', alts.length, 'raw%:', rawAltPct, 'scaled:', altIdx);
           }
 
           if (altIdx !== null) {
