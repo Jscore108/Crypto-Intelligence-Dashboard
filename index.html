@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="css/main.css">
   <link rel="stylesheet" href="css/components.css">
   <link rel="stylesheet" href="css/background.css">
+  <link rel="stylesheet" href="css/bubbles.css">
 
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
 </head>
@@ -343,12 +344,33 @@
       </div>
     </div>
 
+    <!-- Bubble Chart — Top 100 + Watchlist -->
+    <div class="bubble-chart-section">
+      <div class="section-header">
+        <h2>Crypto Bubbles</h2>
+      </div>
+      <div class="bubble-controls">
+        <button class="active" onclick="BubbleChart.setTimeframe('24h');this.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('active'));this.classList.add('active');">24H</button>
+        <button onclick="BubbleChart.setTimeframe('1h');this.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('active'));this.classList.add('active');">1H</button>
+        <button onclick="BubbleChart.setTimeframe('7d');this.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('active'));this.classList.add('active');">7D</button>
+        <div class="bubble-legend">
+          <span><span class="bubble-legend__dot" style="background:rgba(0,200,120,0.8)"></span> Gainers</span>
+          <span><span class="bubble-legend__dot" style="background:rgba(220,50,80,0.8)"></span> Losers</span>
+          <span><span class="bubble-legend__dot" style="background:rgba(255,200,0,0.8)"></span> Watchlist</span>
+        </div>
+      </div>
+      <div class="bubble-container">
+        <canvas class="bubble-canvas" id="bubble-canvas"></canvas>
+      </div>
+    </div>
+
   </main>
 
   <!-- ===== Scripts ===== -->
   <script src="js/api.js"></script>
   <script src="js/indicators.js"></script>
   <script src="js/composite.js"></script>
+  <script src="js/bubbles.js"></script>
   <script>
     // ============================================================
     // Dashboard Controller
@@ -995,6 +1017,8 @@
       setInterval(updatePricesOnly, 15000);
       // Countdown tick every 1s
       setInterval(tickCountdown, 1000);
+      // Init bubble chart after a delay to avoid rate limiting
+      setTimeout(() => BubbleChart.init('bubble-canvas'), 5000);
     })();
 
     // --- Clickable indicator cards → external charts ---

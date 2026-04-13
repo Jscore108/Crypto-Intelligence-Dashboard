@@ -1,0 +1,81 @@
+/* ============================================================
+   bubbles.css — Crypto Bubble Chart
+   ============================================================ */
+
+.bubble-chart-section {
+  margin-top: 32px;
+}
+
+.bubble-container {
+  position: relative;
+  width: 100%;
+  height: 600px;
+  background: rgba(8, 12, 24, 0.4);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(100, 120, 200, 0.08);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.bubble-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.bubble-controls {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.bubble-controls button {
+  background: rgba(10, 14, 28, 0.5);
+  border: 1px solid rgba(100, 120, 200, 0.12);
+  border-radius: 6px;
+  color: var(--text-muted);
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.6rem;
+  font-weight: 600;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.bubble-controls button:hover,
+.bubble-controls button.active {
+  color: var(--accent-neon-blue);
+  border-color: rgba(0, 229, 255, 0.3);
+  background: rgba(0, 229, 255, 0.08);
+  text-shadow: 0 0 6px rgba(0, 229, 255, 0.3);
+}
+
+.bubble-legend {
+  display: flex;
+  gap: 16px;
+  margin-left: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+}
+
+.bubble-legend span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-muted);
+}
+
+.bubble-legend__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+@media (max-width: 768px) {
+  .bubble-container { height: 450px; }
+}
