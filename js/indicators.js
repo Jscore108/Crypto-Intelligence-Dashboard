@@ -189,8 +189,9 @@ const Indicators = (() => {
     const currentPrice = prices[prices.length - 1];
     if (!longTermAvg || longTermAvg === 0) return null;
     const ratio = currentPrice / longTermAvg;
-    const estimated = (ratio - 1.0) * 3.3;
-    console.log('[MVRV Debug] price:', currentPrice, '200SMA:', longTermAvg, 'ratio:', ratio.toFixed(4), 'Z-score:', estimated.toFixed(2));
+    // Calibrated Apr 2026: ratio ~0.83 should give Z-score 0.56
+    // Formula: (ratio - 0.66) * 3.3 → at 0.83: (0.83-0.66)*3.3 = 0.56
+    const estimated = (ratio - 0.66) * 3.3;
     return Math.round(estimated * 100) / 100;
   }
 

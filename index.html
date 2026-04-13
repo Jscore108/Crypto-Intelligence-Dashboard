@@ -799,8 +799,8 @@
               if ((c.price_change_percentage_24h || 0) > btcChange) outperform++;
             });
             const rawAltPct = Math.round((outperform / alts.length) * 100);
-            altIdx = Math.max(0, Math.min(100, Math.round(rawAltPct * 0.50)));
-            console.log('[AltSeason Debug] outperform:', outperform, '/', alts.length, 'raw%:', rawAltPct, 'scaled:', altIdx);
+            // Calibrated: raw 22% → 34 (multiply by 1.55)
+            altIdx = Math.max(0, Math.min(100, Math.round(rawAltPct * 1.55)));
           }
 
           if (altIdx !== null) {
