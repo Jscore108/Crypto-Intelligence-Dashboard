@@ -15,10 +15,9 @@ const SellZones = (() => {
       { label: "1.618 Fib", price: 6900 },
     ],
     LINK: [
-      { label: "0.786 Fib", price: 24 },
-      { label: "52W High", price: 28 },
-      { label: "~1.618 Fib", price: 38 },
-      { label: "2.618 Fib", price: 62 },
+      { label: "0.618 Fib", price: 38 },
+      { label: "0.786 Fib", price: 53 },
+      { label: "1.0", price: 60 },
     ],
     SOL: [
       { label: "Target", price: 418 },
@@ -30,10 +29,10 @@ const SellZones = (() => {
       { label: "T4", price: 0.18 },
     ],
     POPCAT: [
-      { label: "T1", price: 0.35 },
-      { label: "T2", price: 0.55 },
-      { label: "T3", price: 0.85 },
-      { label: "T4", price: 1.258 },
+      { label: "0.382 Fib", price: 0.82 },
+      { label: "0.5 Fib", price: 1.04 },
+      { label: "0.618 Fib", price: 1.28 },
+      { label: "0.786 Fib", price: 1.55 },
     ],
     WIF: [
       { label: "T1", price: 0.90 },
