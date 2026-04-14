@@ -15,9 +15,9 @@ const SellZones = (() => {
       { label: "1.618 Fib", price: 6900 },
     ],
     LINK: [
-      { label: "0.618 Fib", price: 38 },
-      { label: "0.786 Fib", price: 53 },
-      { label: "1.0", price: 60 },
+      { label: "1.618 Fib", price: 38 },
+      { label: "ATH", price: 53 },
+      { label: "2.618 Fib", price: 60 },
     ],
     SOL: [
       { label: "Target", price: 418 },
