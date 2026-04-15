@@ -285,6 +285,83 @@ h1, h2, h3 { font-family: 'Orbitron', sans-serif; font-weight: 700; letter-spaci
 .price-flash-up { animation: priceFlashGreen 1s ease-out; }
 .price-flash-down { animation: priceFlashRed 1s ease-out; }
 
+/* --- Coin Ticker Marquee --- */
+.coin-marquee {
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  background: rgba(3, 4, 10, 0.5);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(0,229,255,0.06);
+  padding: 0;
+  height: 36px;
+}
+
+.coin-marquee__track {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  animation: marqueeScroll 60s linear infinite;
+  width: max-content;
+}
+
+.coin-marquee__track:hover {
+  animation-play-state: paused;
+}
+
+@keyframes marqueeScroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.coin-marquee__item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 18px;
+  white-space: nowrap;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  border-right: 1px solid rgba(100,120,200,0.06);
+  height: 100%;
+}
+
+.coin-marquee__symbol {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 700;
+  font-size: 0.62rem;
+  color: var(--accent-neon-blue);
+  letter-spacing: 0.06em;
+}
+
+.coin-marquee__price {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.coin-marquee__change {
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+.coin-marquee__change--up {
+  color: var(--accent-neon-green);
+  background: rgba(0,255,163,0.08);
+}
+
+.coin-marquee__change--down {
+  color: var(--accent-red);
+  background: rgba(255,45,85,0.08);
+}
+
+.coin-marquee__logo {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+}
+
 /* --- Section Headers --- */
 .section-header {
   display: flex; align-items: center; justify-content: space-between;
